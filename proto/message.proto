@@ -1,0 +1,110 @@
+package proto;
+
+message Message {
+    required Head head = 1;
+    required Body body = 2;
+};
+
+message Head {
+    required uint32 version = 1;
+    required uint32 random_num = 2;
+    required uint32 flow_no = 3;
+    required int32 message_type = 4;
+    required uint32 source_entity = 5;
+    optional uint32 dest_entity = 6;
+    optional string call_purpose = 7; 
+    optional string auth_key = 8;
+    optional uint64 session_key = 9;
+};
+
+message Body {
+    optional ListenRequest listen_request = 1;
+    optional ListenResponse listen_response = 2;
+    optional Ping ping = 3;
+    optional Pong pong = 4;
+    optional LogoutRequest logout_request = 5;
+    optional LogoutResponse logout_response = 6;
+    optional NewConnectionRequest new_connection_request = 7;
+    optional NewConnectionResponse new_connection_response = 8;
+    optional CloseConnectionRequest close_connection_request = 9;
+    optional CloseConnectionResponse close_connection_response = 10;
+    optional DataRequest data_request = 11;
+    optional DataResponse data_response = 12;
+};
+
+enum MessageType {
+    LISTEN_REQUEST = 1;
+    LISTEN_RESPONSE = 2;
+    PING = 3;
+    PONG = 4;
+    LOGOUT_REQUEST = 5;
+    LOGOUT_RESPONSE = 6;
+    NEW_CONNECTION_REQUEST = 7;
+    NEW_CONNECTION_RESPONSE = 8;
+    CLOSE_CONNECTION_REQUEST = 9;
+    CLOSE_CONNECTION_RESOONSE = 10;
+    DATA_REQUEST = 11;
+    DATA_RESPONSE = 12;
+};
+
+message ResponseCode {
+    required int32 retcode = 1;
+    optional string error_message = 2;
+};
+
+message ListenRequest {
+    optional uint32 self_ipv4 = 1;
+    repeated bytes self_ipv6 = 2;
+    required uint32 self_port = 3;
+    required uint32 listen_port = 4;
+};
+
+message ListenResponse {
+    required ResponseCode rc = 1;
+    optional uint64 session_key = 2;
+};
+
+message Ping {
+    required uint64 time = 1;
+};
+
+message Pong {
+    required ResponseCode rc = 1;
+    required uint64 time = 2;
+};
+
+message LogoutRequest {
+
+};
+
+message LogoutResponse {
+    required ResponseCode rc = 1;
+};
+
+message NewConnectionRequest {
+    optional uint32 ip_v4 = 1;
+    repeated bytes ip_v6 = 2;
+    required uint32 port = 3;
+    required uint64 conn_key = 4;
+};
+
+message NewConnectionResponse {
+    required ResponseCode rc = 1;
+};
+
+message CloseConnectionRequest {
+    required uint64 conn_key = 1;
+};
+
+message CloseConnectionResponse {
+    required ResponseCode rc = 1;
+};
+
+message DataRequest {
+    required uint64 conn_key = 1;
+    required string data = 2;
+};
+
+message DataResponse {
+    required ResponseCode rc = 1;
+};
