@@ -16,7 +16,6 @@ typedef std::function<void(MessagePtr message)> ResponseHandleFunction;
 
 class PbDispatch {
  public:
-  explicit PbDispatch(muduo::net::EventLoop *loop);
   virtual void OnMessage(const muduo::net::TcpConnectionPtr &conn,
                          muduo::net::Buffer *buf, muduo::Timestamp);
   void RegisterHandle(int32_t message_type, HandleFunction);
@@ -26,7 +25,6 @@ class PbDispatch {
                             MessagePtr message);
 
  private:
-  muduo::net::EventLoop *loop_;
   std::map<int32_t, HandleFunction> register_handles_;
   std::map<uint32_t, ResponseHandleFunction> response_handles_;
 };

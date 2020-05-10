@@ -5,7 +5,7 @@ project(proxy)
 set(PROXY_VERSION 0.0.1)
 
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -std=c++11 -Wall"
+    "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -fPIC"
 )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -40,3 +40,4 @@ add_subdirectory(common)
 add_subdirectory(muduo)
 set(muduo_deps muduo_net muduo_base)
 add_subdirectory(server)
+add_subdirectory(client)

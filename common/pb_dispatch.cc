@@ -5,8 +5,6 @@
 #include <string>
 #include <utility>
 
-PbDispatch::PbDispatch(muduo::net::EventLoop *loop) : loop_(loop) {}
-
 void PbDispatch::OnMessage(const muduo::net::TcpConnectionPtr &conn,
                            muduo::net::Buffer *buf, muduo::Timestamp) {
   while (buf->readableBytes() >= sizeof(uint32_t)) {

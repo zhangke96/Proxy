@@ -2,6 +2,7 @@
 
 #include <muduo/base/Logging.h>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "common/message_util.h"
@@ -9,11 +10,14 @@
 
 ProxyInstance::ProxyInstance(muduo::net::EventLoop *loop,
                              const muduo::net::TcpConnectionPtr &conn)
-    : PbDispatch(loop), loop_(loop), proxy_conn_(conn), conn_id_(0) {}
+    : PbDispatch(), loop_(loop), proxy_conn_(conn), conn_id_(0) {}
 
 void ProxyInstance::Init() {
   RegisterHandle(proto::LISTEN_REQUEST,
                  std::bind(&ProxyInstance::HandleListenRequest, this,
+                           std::placeholders::_1, std::placeholders::_2));
+  RegisterHandle(proto::DATA_REQUEST,
+                 std::bind(&ProxyInstance::HandleDataRequest, this,
                            std::placeholders::_1, std::placeholders::_2));
 }
 
@@ -138,3 +142,26 @@ void ProxyInstance::EntryData(MessagePtr message,
 uint64_t ProxyInstance::GetConnId() { return ++conn_id_; }
 
 uint32_t ProxyInstance::GetSourceEntity() { return ++source_entity_; }
+
+void ProxyInstance::HandleDataRequest(const muduo::net::TcpConnectionPtr,
+                                      MessagePtr message) {
+  // 判断auth
+  assert(message->head().message_type() == proto::DATA_REQUEST);
+  assert(message->body().has_data_request());
+  MessagePtr data_response = std::make_shared<proto::Message>();
+  MakeResponse(message.get(), proto::DATA_RESPONSE, data_response.get());
+  proto::DataResponse *response_body =
+      data_response->mutable_body()->mutable_data_response();
+  const proto::DataRequest &data_request = message->body().data_request();
+  uint64_t conn_key = data_request.conn_key();
+  const std::string &data = data_request.data();
+  if (conn_map_.find(conn_key) != conn_map_.end()) {
+    conn_map_[conn_key]->send(data.c_str(), data.size());
+    response_body->mutable_rc()->set_retcode(0);
+  } else {
+    response_body->mutable_rc()->set_retcode(-1);
+  }
+  // response_body->
+  SendResponse(proxy_conn_, data_response);
+  return;
+}

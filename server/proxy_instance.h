@@ -30,6 +30,8 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance>,
  private:
   void HandleListenRequest(const muduo::net::TcpConnectionPtr,
                            MessagePtr message);
+  void HandleDataRequest(const muduo::net::TcpConnectionPtr,
+                         MessagePtr message);
   muduo::net::EventLoop *loop_;
   muduo::net::TcpConnectionPtr proxy_conn_;
   std::unique_ptr<muduo::net::TcpServer> server_;

@@ -478,14 +478,14 @@ void protobuf_AddDesc_message_2eproto() {
     "ctionResponse\022\037\n\002rc\030\001 \002(\0132\023.proto.Respon"
     "seCode\"-\n\013DataRequest\022\020\n\010conn_key\030\001 \002(\004\022"
     "\014\n\004data\030\002 \002(\t\"/\n\014DataResponse\022\037\n\002rc\030\001 \002("
-    "\0132\023.proto.ResponseCode*\216\002\n\013MessageType\022\022"
+    "\0132\023.proto.ResponseCode*\215\002\n\013MessageType\022\022"
     "\n\016LISTEN_REQUEST\020\001\022\023\n\017LISTEN_RESPONSE\020\002\022"
     "\010\n\004PING\020\003\022\010\n\004PONG\020\004\022\022\n\016LOGOUT_REQUEST\020\005\022"
     "\023\n\017LOGOUT_RESPONSE\020\006\022\032\n\026NEW_CONNECTION_R"
     "EQUEST\020\007\022\033\n\027NEW_CONNECTION_RESPONSE\020\010\022\034\n"
-    "\030CLOSE_CONNECTION_REQUEST\020\t\022\035\n\031CLOSE_CON"
-    "NECTION_RESOONSE\020\n\022\020\n\014DATA_REQUEST\020\013\022\021\n\r"
-    "DATA_RESPONSE\020\014", 1855);
+    "\030CLOSE_CONNECTION_REQUEST\020\t\022\034\n\030CLOSE_CON"
+    "NECTION_RESONSE\020\n\022\020\n\014DATA_REQUEST\020\013\022\021\n\rD"
+    "ATA_RESPONSE\020\014", 1854);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "message.proto", &protobuf_RegisterTypes);
   Message::default_instance_ = new Message();
