@@ -1,11 +1,14 @@
 // Copyright [2020] zhangke
 
 #include "client/proxy_client.h"
+#include <muduo/base/Logging.h>
 #include <boost/any.hpp>
+#include <utility>
 #include "common/message.pb.h"
 #include "common/message_util.h"
 
 int ProxyClient::Start() {
+  muduo::Logger::setLogLevel(muduo::Logger::DEBUG);
   event_loop_thread_.reset(new muduo::net::EventLoopThread);
   loop_ = event_loop_thread_->startLoop();
   StartProxyService();
@@ -20,18 +23,20 @@ int ProxyClient::Start() {
 
 void ProxyClient::StartProxyService() {
   // 建立连接
-  proxy_client_.reset(
-      new muduo::net::TcpClient(loop_, server_address_, "proxy_connection"));
-  proxy_client_->setConnectionCallback(std::bind(
-      &ProxyClient::OnProxyConnection, this_ptr(), std::placeholders::_1));
-  proxy_client_->setMessageCallback(
-      std::bind(&ProxyClient::OnMessage, this_ptr(), std::placeholders::_1,
-                std::placeholders::_2, std::placeholders::_3));
-  proxy_client_->connect();
-  loop_->loop();
+  loop_->runInLoop([=] {
+    proxy_client_.reset(
+        new muduo::net::TcpClient(loop_, server_address_, "proxy_connection"));
+    proxy_client_->setConnectionCallback(std::bind(
+        &ProxyClient::OnProxyConnection, this_ptr(), std::placeholders::_1));
+    proxy_client_->setMessageCallback(
+        std::bind(&ProxyClient::OnMessage, this_ptr(), std::placeholders::_1,
+                  std::placeholders::_2, std::placeholders::_3));
+    proxy_client_->connect();
+  });
 }
 
 void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &) {
+  LOG_INFO << "proxy connection established";
   // 注册pb handle
   RegisterHandle(proto::NEW_CONNECTION_REQUEST,
                  std::bind(&ProxyClient::OnNewConnection, this_ptr(),
@@ -67,7 +72,11 @@ void ProxyClient::HandleListenResponse(MessagePtr response) {
   } else {
     start_retcode_ = -1;
   }
-  start_finish_ = true;
+  {
+    muduo::MutexLockGuard lock(mutex_);
+    start_finish_ = true;
+    cond_.notify();
+  }
 }
 
 void ProxyClient::OnNewConnection(const muduo::net::TcpConnectionPtr &conn,
@@ -82,9 +91,9 @@ void ProxyClient::OnNewConnection(const muduo::net::TcpConnectionPtr &conn,
   uint64_t conn_key = new_connection_request.conn_key();
   std::unique_ptr<muduo::net::TcpClient> tcp_client(new muduo::net::TcpClient(
       loop_, local_address_, "proxy-" + remote_address.toIpPort()));
-  tcp_client->connection()->setContext(conn_key);
-  tcp_client->setConnectionCallback(std::bind(
-      &ProxyClient::OnClientConnection, this_ptr(), std::placeholders::_1));
+  tcp_client->setConnectionCallback(std::bind(&ProxyClient::OnClientConnection,
+                                              this_ptr(), std::placeholders::_1,
+                                              conn_key));
   tcp_client->setMessageCallback(std::bind(
       &ProxyClient::OnClientMessage, this_ptr(), std::placeholders::_1,
       std::placeholders::_2, std::placeholders::_3));
@@ -100,12 +109,13 @@ void ProxyClient::OnNewConnection(const muduo::net::TcpConnectionPtr &conn,
   clients_[conn_key] = std::move(proxy_connection);
 }
 
-void ProxyClient::OnClientConnection(const muduo::net::TcpConnectionPtr &conn) {
+void ProxyClient::OnClientConnection(const muduo::net::TcpConnectionPtr &conn,
+                                     uint64_t conn_key) {
   // 添加到记录中
-  uint64_t conn_key = boost::any_cast<uint64_t>(conn->getContext());
   assert(clients_.find(conn_key) != clients_.end());
   ProxyConnection &proxy_connection = clients_[conn_key];
   if (proxy_connection.state == ProxyConnState::CONNECTING) {
+    proxy_connection.client_conn->connection()->setContext(conn_key);
     // 连接server成功
     proxy_connection.state = ProxyConnState::CONNECTED;
     proxy_connection.server_open = true;
@@ -130,6 +140,7 @@ void ProxyClient::OnClientConnection(const muduo::net::TcpConnectionPtr &conn) {
 void ProxyClient::OnClientMessage(const muduo::net::TcpConnectionPtr &conn,
                                   muduo::net::Buffer *buffer,
                                   muduo::Timestamp) {
+  LOG_DEBUG << "receive from server";
   uint64_t conn_key = boost::any_cast<uint64_t>(conn->getContext());
   MessagePtr request_message = std::make_shared<proto::Message>();
   MakeMessage(request_message.get(), proto::DATA_REQUEST, GetSourceEntity(), "",
@@ -163,7 +174,7 @@ void ProxyClient::OnNewData(const muduo::net::TcpConnectionPtr &conn,
       client_connection.pending_data.push_back(data);
     } else {
       client_connection.client_conn->connection()->send(data.c_str(),
-                                                       data.size());
+                                                        data.size());
     }
     data_response->mutable_rc()->set_retcode(0);
   } else {

@@ -29,6 +29,8 @@ void PbDispatch::OnMessage(const muduo::net::TcpConnectionPtr &conn,
                       << " flow_num:" << message->head().flow_no()
                       << " desst_entity:" << message->head().dest_entity();
           } else {
+            LOG_DEBUG << "response from:" << conn->peerAddress().toIpPort()
+                      << "\n" << message->DebugString();
             (index->second)(message);
             response_handles_.erase(index);
           }
@@ -36,6 +38,8 @@ void PbDispatch::OnMessage(const muduo::net::TcpConnectionPtr &conn,
         }
         if (register_handles_.find(message->head().message_type()) !=
             register_handles_.end()) {
+          LOG_DEBUG << "request from:" << conn->peerAddress().toIpPort() << "\n"
+                    << message->DebugString();
           register_handles_[message->head().message_type()](conn, message);
           return;
         } else {
@@ -44,6 +48,8 @@ void PbDispatch::OnMessage(const muduo::net::TcpConnectionPtr &conn,
           return;
         }
       }
+    } else {
+      break;
     }
   }
 }
@@ -55,6 +61,8 @@ void PbDispatch::RegisterHandle(int32_t message_type,
 
 void PbDispatch::SendResponse(const muduo::net::TcpConnectionPtr &conn,
                               MessagePtr message) {
+  LOG_DEBUG << "send to:" << conn->peerAddress().toIpPort() << "\n"
+            << message->DebugString();
   std::string str;
   bool serialize_ret = message->SerializeToString(&str);
   if (!serialize_ret) {

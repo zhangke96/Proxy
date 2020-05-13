@@ -57,34 +57,38 @@ void ProxyInstance::HandleListenRequest(const muduo::net::TcpConnectionPtr,
 
 void ProxyInstance::OnClientConnection(
     const muduo::net::TcpConnectionPtr &conn) {
-  assert(conn->getContext().empty());
-  uint64_t conn_id = GetConnId();
-  conn->setContext(conn_id);
-  MessagePtr message = std::make_shared<proto::Message>();
-  MakeMessage(message.get(), proto::NEW_CONNECTION_REQUEST, GetSourceEntity());
-  proto::NewConnectionRequest *new_connection_request =
-      message->mutable_body()->mutable_new_connection_request();
-  new_connection_request->set_conn_key(conn_id);
-  muduo::net::InetAddress peer_address = conn->peerAddress();
-  if (peer_address.family() == AF_INET) {
-    const struct sockaddr_in *address =
-        reinterpret_cast<const struct sockaddr_in *>(
-            peer_address.getSockAddr());
-    new_connection_request->set_ip_v4(ntohl(address->sin_addr.s_addr));
-    new_connection_request->set_port(ntohs(address->sin_port));
-  } else if (peer_address.family() == AF_INET6) {
-    const struct sockaddr_in6 *address =
-        reinterpret_cast<const struct sockaddr_in6 *>(
-            peer_address.getSockAddr());
-    for (uint i = 0; i < sizeof(address->sin6_addr.s6_addr) / sizeof(uint8_t);
-         ++i) {
-      *(new_connection_request->add_ip_v6()) = address->sin6_addr.s6_addr[i];
+  if (conn->getContext().empty()) {
+    uint64_t conn_id = GetConnId();
+    conn->setContext(conn_id);
+    MessagePtr message = std::make_shared<proto::Message>();
+    MakeMessage(message.get(), proto::NEW_CONNECTION_REQUEST, GetSourceEntity());
+    proto::NewConnectionRequest *new_connection_request =
+        message->mutable_body()->mutable_new_connection_request();
+    new_connection_request->set_conn_key(conn_id);
+    muduo::net::InetAddress peer_address = conn->peerAddress();
+    if (peer_address.family() == AF_INET) {
+      const struct sockaddr_in *address =
+          reinterpret_cast<const struct sockaddr_in *>(
+              peer_address.getSockAddr());
+      new_connection_request->set_ip_v4(ntohl(address->sin_addr.s_addr));
+      new_connection_request->set_port(ntohs(address->sin_port));
+    } else if (peer_address.family() == AF_INET6) {
+      const struct sockaddr_in6 *address =
+          reinterpret_cast<const struct sockaddr_in6 *>(
+              peer_address.getSockAddr());
+      for (uint i = 0; i < sizeof(address->sin6_addr.s6_addr) / sizeof(uint8_t);
+          ++i) {
+        *(new_connection_request->add_ip_v6()) = address->sin6_addr.s6_addr[i];
+      }
+      new_connection_request->set_port(ntohs(address->sin6_port));
     }
-    new_connection_request->set_port(ntohs(address->sin6_port));
+    SendRequest(proxy_conn_, message,
+                std::bind(&ProxyInstance::EntryAddConnection, this_ptr(),
+                          std::placeholders::_1, conn));
+  } else {
+    // 链接关闭
+
   }
-  SendRequest(proxy_conn_, message,
-              std::bind(&ProxyInstance::EntryAddConnection, this_ptr(),
-                        std::placeholders::_1, conn));
 }
 
 void ProxyInstance::OnClientMessage(const muduo::net::TcpConnectionPtr &conn,

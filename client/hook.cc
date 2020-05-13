@@ -30,7 +30,7 @@ int listen(int sockfd, int backlog) {
   int ret = 0;
   sockaddr_in server_addr;
   ret = inet_pton(AF_INET, proxy_server_addr, &server_addr);
-  if (ret != 0) {
+  if (ret != 1) {
     return -1;
   }
   int port = atoi(proxy_server_port);

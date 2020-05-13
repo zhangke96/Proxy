@@ -54,7 +54,8 @@ class ProxyClient : public PbDispatch,
   void OnCloseConnection(const muduo::net::TcpConnectionPtr &conn,
                          MessagePtr message);
   void HandleListenResponse(MessagePtr message);
-  void OnClientConnection(const muduo::net::TcpConnectionPtr &);
+  void OnClientConnection(const muduo::net::TcpConnectionPtr &,
+                          uint64_t conn_key);
   void OnClientMessage(const muduo::net::TcpConnectionPtr &,
                        muduo::net::Buffer *buffer, muduo::Timestamp);
   void HandleDataResponse(MessagePtr message);
