@@ -167,7 +167,7 @@ void ProxyClient::OnNewData(const muduo::net::TcpConnectionPtr &conn,
   MessagePtr response = std::make_shared<proto::Message>();
   MakeResponse(message.get(), proto::DATA_RESPONSE, response.get());
   proto::DataResponse *data_response =
-      message->mutable_body()->mutable_data_response();
+      response->mutable_body()->mutable_data_response();
   if (clients_.find(conn_key) != clients_.end()) {
     auto &client_connection = clients_[conn_key];
     if (client_connection.state == ProxyConnState::CONNECTING) {

@@ -18,6 +18,7 @@ void PbDispatch::OnMessage(const muduo::net::TcpConnectionPtr &conn,
       bool parse_ret = message->ParseFromString(msg_str);
       if (!parse_ret) {
         LOG_ERROR << "Parse pb error";
+        conn->forceClose();
         return;
       } else {
         if (message->head().has_dest_entity()) {
@@ -34,17 +35,19 @@ void PbDispatch::OnMessage(const muduo::net::TcpConnectionPtr &conn,
             (index->second)(message);
             response_handles_.erase(index);
           }
-          return;
+          continue;
         }
+        // 请求
         if (register_handles_.find(message->head().message_type()) !=
             register_handles_.end()) {
           LOG_DEBUG << "request from:" << conn->peerAddress().toIpPort() << "\n"
                     << message->DebugString();
           register_handles_[message->head().message_type()](conn, message);
-          return;
+          continue;
         } else {
           LOG_ERROR << "unreigster message_type:"
                     << message->head().message_type();
+          conn->forceClose();
           return;
         }
       }

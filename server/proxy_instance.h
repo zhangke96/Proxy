@@ -8,6 +8,8 @@
 #include <muduo/net/TcpServer.h>
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "common/pb_dispatch.h"
 
@@ -40,6 +42,7 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance>,
   uint64_t conn_id_;
   uint32_t source_entity_;
   std::map<uint64_t, muduo::net::TcpConnectionPtr> conn_map_;
+  std::map<uint64_t, std::vector<std::string>> pending_message_;
 };
 
 #endif  // SERVER_PROXY_INSTANCE_H_
