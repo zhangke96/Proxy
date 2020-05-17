@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/types.h>
+#include <muduo/base/Mutex.h>
 #include <muduo/net/InetAddress.h>
 #include "client/proxy_client.h"
 
@@ -17,6 +18,7 @@ static const char PROXY_SERVER_PORT[] = "PROXY_SERVER_PORT";
 static const char PROXY_LISTEN_PORT[] = "PROXY_LISTEN_PORT";
 
 static std::shared_ptr<ProxyClient> proxy_client;
+static muduo::MutexLock mutex;
 
 int listen(int sockfd, int backlog) {
   char *proxy_server_addr = getenv(PROXY_SERVER_ADDR);
@@ -39,21 +41,29 @@ int listen(int sockfd, int backlog) {
   muduo::net::InetAddress server_address(proxy_server_addr, port);
   // 获取本地bind地址
   struct sockaddr_in bind_addr;
-  socklen_t addr_len;
+  socklen_t addr_len = sizeof(bind_addr);
   ret = getsockname(sockfd, (struct sockaddr *)&bind_addr, &addr_len);
   if (ret != 0) {
     errno = EDESTADDRREQ;
     return -1;
   }
   muduo::net::InetAddress local_address(bind_addr);
-  proxy_client =
-      std::make_shared<ProxyClient>(server_address, local_address, listen_port);
-  ret = proxy_client->Start();
-  if (ret != 0) {
-    errno = EDESTADDRREQ;
-    return -1;
+  {
+    muduo::MutexLockGuard lock(mutex);
+    if (proxy_client) {
+      goto listen;
+    } else {
+      proxy_client = std::make_shared<ProxyClient>(server_address,
+                                                   local_address, listen_port);
+      ret = proxy_client->Start();
+      if (ret != 0) {
+        errno = EDESTADDRREQ;
+        return -1;
+      }
+    }
   }
 
+listen:
   void *handle = dlopen("libc.so.6", RTLD_LAZY);
   LISTEN listen_syscal = (LISTEN)dlsym(handle, "listen");
   return listen_syscal(sockfd, backlog);
