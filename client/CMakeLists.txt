@@ -1,6 +1,7 @@
 set(proxy_client_srcs
     hook.cc
     proxy_client.cc
+    tcp_client.cc
 )
 
 add_library(proxy_client SHARED ${proxy_client_srcs})

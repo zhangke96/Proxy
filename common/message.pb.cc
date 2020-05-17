@@ -477,7 +477,7 @@ void protobuf_AddDesc_message_2eproto() {
     "nRequest\022\020\n\010conn_key\030\001 \002(\004\":\n\027CloseConne"
     "ctionResponse\022\037\n\002rc\030\001 \002(\0132\023.proto.Respon"
     "seCode\"-\n\013DataRequest\022\020\n\010conn_key\030\001 \002(\004\022"
-    "\014\n\004data\030\002 \002(\t\"/\n\014DataResponse\022\037\n\002rc\030\001 \002("
+    "\014\n\004data\030\002 \003(\014\"/\n\014DataResponse\022\037\n\002rc\030\001 \002("
     "\0132\023.proto.ResponseCode*\215\002\n\013MessageType\022\022"
     "\n\016LISTEN_REQUEST\020\001\022\023\n\017LISTEN_RESPONSE\020\002\022"
     "\010\n\004PING\020\003\022\010\n\004PONG\020\004\022\022\n\016LOGOUT_REQUEST\020\005\022"
@@ -4818,7 +4818,6 @@ DataRequest::DataRequest(const DataRequest& from)
 void DataRequest::SharedCtor() {
   _cached_size_ = 0;
   conn_key_ = GOOGLE_ULONGLONG(0);
-  data_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -4827,9 +4826,6 @@ DataRequest::~DataRequest() {
 }
 
 void DataRequest::SharedDtor() {
-  if (data_ != &::google::protobuf::internal::kEmptyString) {
-    delete data_;
-  }
   if (this != default_instance_) {
   }
 }
@@ -4858,12 +4854,8 @@ DataRequest* DataRequest::New() const {
 void DataRequest::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     conn_key_ = GOOGLE_ULONGLONG(0);
-    if (has_data()) {
-      if (data_ != &::google::protobuf::internal::kEmptyString) {
-        data_->clear();
-      }
-    }
   }
+  data_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -4889,19 +4881,17 @@ bool DataRequest::MergePartialFromCodedStream(
         break;
       }
 
-      // required string data = 2;
+      // repeated bytes data = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_data:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_data()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->data().data(), this->data().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->add_data()));
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(18)) goto parse_data;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -4929,13 +4919,10 @@ void DataRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->conn_key(), output);
   }
 
-  // required string data = 2;
-  if (has_data()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->data().data(), this->data().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->data(), output);
+  // repeated bytes data = 2;
+  for (int i = 0; i < this->data_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytes(
+      2, this->data(i), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -4951,14 +4938,10 @@ void DataRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->conn_key(), target);
   }
 
-  // required string data = 2;
-  if (has_data()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->data().data(), this->data().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->data(), target);
+  // repeated bytes data = 2;
+  for (int i = 0; i < this->data_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteBytesToArray(2, this->data(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -4979,14 +4962,14 @@ int DataRequest::ByteSize() const {
           this->conn_key());
     }
 
-    // required string data = 2;
-    if (has_data()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->data());
-    }
-
   }
+  // repeated bytes data = 2;
+  total_size += 1 * this->data_size();
+  for (int i = 0; i < this->data_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
+      this->data(i));
+  }
+
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -5012,12 +4995,10 @@ void DataRequest::MergeFrom(const ::google::protobuf::Message& from) {
 
 void DataRequest::MergeFrom(const DataRequest& from) {
   GOOGLE_CHECK_NE(&from, this);
+  data_.MergeFrom(from.data_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_conn_key()) {
       set_conn_key(from.conn_key());
-    }
-    if (from.has_data()) {
-      set_data(from.data());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -5036,7 +5017,7 @@ void DataRequest::CopyFrom(const DataRequest& from) {
 }
 
 bool DataRequest::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
 
   return true;
 }
@@ -5044,7 +5025,7 @@ bool DataRequest::IsInitialized() const {
 void DataRequest::Swap(DataRequest* other) {
   if (other != this) {
     std::swap(conn_key_, other->conn_key_);
-    std::swap(data_, other->data_);
+    data_.Swap(&other->data_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

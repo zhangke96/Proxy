@@ -68,6 +68,7 @@ void PbDispatch::SendResponse(const muduo::net::TcpConnectionPtr &conn,
             << message->DebugString();
   std::string str;
   bool serialize_ret = message->SerializeToString(&str);
+  assert(serialize_ret);
   if (!serialize_ret) {
     LOG_ERROR << "serialize fail," << message->DebugString();
     return;

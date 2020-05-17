@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "common/pb_dispatch.h"
+#include "tcp_client.h"
 
 enum class ProxyConnState : uint32_t {
   INIT_STATE,
@@ -23,7 +24,7 @@ enum class ProxyConnState : uint32_t {
 
 struct ProxyConnection {
   uint64_t conn_key;
-  std::unique_ptr<muduo::net::TcpClient> client_conn;
+  std::unique_ptr<TcpClient> client_conn;
   ProxyConnState state;
   bool client_open;
   bool server_open;
@@ -58,12 +59,15 @@ class ProxyClient : public PbDispatch,
                           uint64_t conn_key);
   void OnClientMessage(const muduo::net::TcpConnectionPtr &,
                        muduo::net::Buffer *buffer, muduo::Timestamp);
+  void OnClientClose(const muduo::net::TcpConnectionPtr &, uint64_t conn_key);
   void HandleDataResponse(MessagePtr message);
+  void HandleCloseResponse(MessagePtr message, uint64_t conn_key);
 
  private:
   std::shared_ptr<ProxyClient> this_ptr() { return shared_from_this(); }
   void StartProxyService();
   uint32_t GetSourceEntity() { return ++source_entity_; }
+  void RemoveConnection(uint64_t conn_key);
   uint32_t source_entity_;
   muduo::net::InetAddress server_address_;
   muduo::net::InetAddress local_address_;

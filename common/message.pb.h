@@ -1638,29 +1638,31 @@ class DataRequest : public ::google::protobuf::Message {
   inline ::google::protobuf::uint64 conn_key() const;
   inline void set_conn_key(::google::protobuf::uint64 value);
 
-  // required string data = 2;
-  inline bool has_data() const;
+  // repeated bytes data = 2;
+  inline int data_size() const;
   inline void clear_data();
   static const int kDataFieldNumber = 2;
-  inline const ::std::string& data() const;
-  inline void set_data(const ::std::string& value);
-  inline void set_data(const char* value);
-  inline void set_data(const char* value, size_t size);
-  inline ::std::string* mutable_data();
-  inline ::std::string* release_data();
-  inline void set_allocated_data(::std::string* data);
+  inline const ::std::string& data(int index) const;
+  inline ::std::string* mutable_data(int index);
+  inline void set_data(int index, const ::std::string& value);
+  inline void set_data(int index, const char* value);
+  inline void set_data(int index, const void* value, size_t size);
+  inline ::std::string* add_data();
+  inline void add_data(const ::std::string& value);
+  inline void add_data(const char* value);
+  inline void add_data(const void* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& data() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_data();
 
   // @@protoc_insertion_point(class_scope:proto.DataRequest)
  private:
   inline void set_has_conn_key();
   inline void clear_has_conn_key();
-  inline void set_has_data();
-  inline void clear_has_data();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::uint64 conn_key_;
-  ::std::string* data_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> data_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -3257,74 +3259,48 @@ inline void DataRequest::set_conn_key(::google::protobuf::uint64 value) {
   conn_key_ = value;
 }
 
-// required string data = 2;
-inline bool DataRequest::has_data() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void DataRequest::set_has_data() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void DataRequest::clear_has_data() {
-  _has_bits_[0] &= ~0x00000002u;
+// repeated bytes data = 2;
+inline int DataRequest::data_size() const {
+  return data_.size();
 }
 inline void DataRequest::clear_data() {
-  if (data_ != &::google::protobuf::internal::kEmptyString) {
-    data_->clear();
-  }
-  clear_has_data();
+  data_.Clear();
 }
-inline const ::std::string& DataRequest::data() const {
-  return *data_;
+inline const ::std::string& DataRequest::data(int index) const {
+  return data_.Get(index);
 }
-inline void DataRequest::set_data(const ::std::string& value) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::kEmptyString) {
-    data_ = new ::std::string;
-  }
-  data_->assign(value);
+inline ::std::string* DataRequest::mutable_data(int index) {
+  return data_.Mutable(index);
 }
-inline void DataRequest::set_data(const char* value) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::kEmptyString) {
-    data_ = new ::std::string;
-  }
-  data_->assign(value);
+inline void DataRequest::set_data(int index, const ::std::string& value) {
+  data_.Mutable(index)->assign(value);
 }
-inline void DataRequest::set_data(const char* value, size_t size) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::kEmptyString) {
-    data_ = new ::std::string;
-  }
-  data_->assign(reinterpret_cast<const char*>(value), size);
+inline void DataRequest::set_data(int index, const char* value) {
+  data_.Mutable(index)->assign(value);
 }
-inline ::std::string* DataRequest::mutable_data() {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::kEmptyString) {
-    data_ = new ::std::string;
-  }
+inline void DataRequest::set_data(int index, const void* value, size_t size) {
+  data_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DataRequest::add_data() {
+  return data_.Add();
+}
+inline void DataRequest::add_data(const ::std::string& value) {
+  data_.Add()->assign(value);
+}
+inline void DataRequest::add_data(const char* value) {
+  data_.Add()->assign(value);
+}
+inline void DataRequest::add_data(const void* value, size_t size) {
+  data_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DataRequest::data() const {
   return data_;
 }
-inline ::std::string* DataRequest::release_data() {
-  clear_has_data();
-  if (data_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = data_;
-    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-inline void DataRequest::set_allocated_data(::std::string* data) {
-  if (data_ != &::google::protobuf::internal::kEmptyString) {
-    delete data_;
-  }
-  if (data) {
-    set_has_data();
-    data_ = data;
-  } else {
-    clear_has_data();
-    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DataRequest::mutable_data() {
+  return &data_;
 }
 
 // -------------------------------------------------------------------
