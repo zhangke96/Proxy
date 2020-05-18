@@ -9,7 +9,7 @@ void PbDispatch::OnMessage(const muduo::net::TcpConnectionPtr &conn,
                            muduo::net::Buffer *buf, muduo::Timestamp) {
   while (buf->readableBytes() >= sizeof(uint32_t)) {
     uint32_t msg_length = static_cast<uint32_t>(buf->peekInt32());
-    if (buf->readableBytes() >= msg_length) {
+    if (buf->readableBytes() >= msg_length + sizeof(uint32_t)) {
       buf->retrieveInt32();
       const char *message_ptr = buf->peek();
       std::string msg_str(message_ptr, msg_length);
