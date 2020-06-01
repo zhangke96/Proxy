@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "common/pb_dispatch.h"
+#include "common/message_dispatch.h"
 #include "TcpServer.h"
 
 struct Connection {
@@ -29,12 +29,15 @@ struct Connection {
   std::vector<std::string> pending_message;
 };
 
-class ProxyInstance : public std::enable_shared_from_this<ProxyInstance>,
-                      public PbDispatch {
+class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
  public:
   ProxyInstance(muduo::net::EventLoop *loop,
                 const muduo::net::TcpConnectionPtr &conn);
   void Init();
+  void OnMessage(const muduo::net::TcpConnectionPtr &conn,
+                 muduo::net::Buffer *buf, muduo::Timestamp time) {
+    dispatcher_.OnMessage(conn, buf, time);
+  }
   void OnNewConnection(int sockfd, const muduo::net::InetAddress &);
   void OnClientConnection(const muduo::net::TcpConnectionPtr &);
   void OnClientMessage(const muduo::net::TcpConnectionPtr &,
@@ -42,7 +45,8 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance>,
   void OnClientClose(const muduo::net::TcpConnectionPtr &);
   void EntryAddConnection(MessagePtr message,
                           const muduo::net::TcpConnectionPtr &);
-  void EntryData(MessagePtr, const muduo::net::TcpConnectionPtr &);
+  void EntryData(const muduo::net::TcpConnectionPtr &conn, ProxyMessagePtr,
+                 const muduo::net::TcpConnectionPtr &client_conn);
   void EntryCloseConnection(MessagePtr, uint64_t conn_id);
   uint64_t GetConnId();
   uint32_t GetSourceEntity();
@@ -50,14 +54,15 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance>,
 
  private:
   void HandleListenRequest(const muduo::net::TcpConnectionPtr,
-                           MessagePtr message);
+                           ProxyMessagePtr request_head, MessagePtr message);
   void HandleDataRequest(const muduo::net::TcpConnectionPtr,
-                         MessagePtr message);
+                         ProxyMessagePtr message);
   void HandleCloseConnRequest(const muduo::net::TcpConnectionPtr,
-                              MessagePtr message);
+                              ProxyMessagePtr request_head, MessagePtr message);
   void StartListen();
   void RemoveConnecion(uint64_t conn_id);
   muduo::net::EventLoop *loop_;
+  MessageDispatch dispatcher_;
   muduo::net::TcpConnectionPtr proxy_conn_;
   // std::unique_ptr<TcpServer> server_;
 

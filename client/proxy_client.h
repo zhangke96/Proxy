@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/pb_dispatch.h"
+#include "common/message_dispatch.h"
 #include "tcp_client.h"
 
 enum class ProxyConnState : uint32_t {
@@ -32,8 +32,7 @@ struct ProxyConnection {
   std::vector<std::string> pending_data;
 };
 
-class ProxyClient : public PbDispatch,
-                    public std::enable_shared_from_this<ProxyClient> {
+class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
  public:
   ProxyClient(const muduo::net::InetAddress &server_address,
               const muduo::net::InetAddress &local_address,
@@ -48,19 +47,25 @@ class ProxyClient : public PbDispatch,
         cond_(mutex_),
         session_key_(0) {}
   int Start();
+  void OnMessage(const muduo::net::TcpConnectionPtr &conn,
+                 muduo::net::Buffer *buf, muduo::Timestamp time) {
+    dispatcher_->OnMessage(conn, buf, time);
+  }
   void OnProxyConnection(const muduo::net::TcpConnectionPtr &);
   void OnNewConnection(const muduo::net::TcpConnectionPtr &conn,
-                       MessagePtr message);
-  void OnNewData(const muduo::net::TcpConnectionPtr &conn, MessagePtr message);
+                       ProxyMessagePtr request_head, MessagePtr message);
+  void OnNewData(const muduo::net::TcpConnectionPtr &conn,
+                 ProxyMessagePtr message);
   void OnCloseConnection(const muduo::net::TcpConnectionPtr &conn,
-                         MessagePtr message);
+                         ProxyMessagePtr request_head, MessagePtr message);
   void HandleListenResponse(MessagePtr message);
   void OnClientConnection(const muduo::net::TcpConnectionPtr &,
-                          uint64_t conn_key);
+                          uint64_t conn_key, ProxyMessagePtr request_head);
   void OnClientMessage(const muduo::net::TcpConnectionPtr &,
                        muduo::net::Buffer *buffer, muduo::Timestamp);
   void OnClientClose(const muduo::net::TcpConnectionPtr &, uint64_t conn_key);
-  void HandleDataResponse(MessagePtr message);
+  void HandleDataResponse(const muduo::net::TcpConnectionPtr &conn,
+                          ProxyMessagePtr response);
   void HandleCloseResponse(MessagePtr message, uint64_t conn_key);
 
  private:
@@ -68,6 +73,7 @@ class ProxyClient : public PbDispatch,
   void StartProxyService();
   uint32_t GetSourceEntity() { return ++source_entity_; }
   void RemoveConnection(uint64_t conn_key);
+  std::unique_ptr<MessageDispatch> dispatcher_;
   uint32_t source_entity_;
   muduo::net::InetAddress server_address_;
   muduo::net::InetAddress local_address_;

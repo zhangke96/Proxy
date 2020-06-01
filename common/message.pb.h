@@ -30,7 +30,7 @@
 namespace proto {
 
 // Internal implementation detail -- do not call these.
-void  protobuf_AddDesc_message_2eproto();
+void protobuf_AddDesc_message_2eproto();
 void protobuf_AssignDesc_message_2eproto();
 void protobuf_ShutdownFile_message_2eproto();
 
@@ -72,13 +72,12 @@ const int MessageType_ARRAYSIZE = MessageType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* MessageType_descriptor();
 inline const ::std::string& MessageType_Name(MessageType value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    MessageType_descriptor(), value);
+  return ::google::protobuf::internal::NameOfEnum(MessageType_descriptor(),
+                                                  value);
 }
-inline bool MessageType_Parse(
-    const ::std::string& name, MessageType* value) {
+inline bool MessageType_Parse(const ::std::string& name, MessageType* value) {
   return ::google::protobuf::internal::ParseNamedEnum<MessageType>(
-    MessageType_descriptor(), name, value);
+      MessageType_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -122,14 +121,16 @@ class Message : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -169,7 +170,7 @@ class Message : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -218,14 +219,16 @@ class Head : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -341,7 +344,7 @@ class Head : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -390,14 +393,16 @@ class Body : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -411,7 +416,8 @@ class Body : public ::google::protobuf::Message {
   inline const ::proto::ListenRequest& listen_request() const;
   inline ::proto::ListenRequest* mutable_listen_request();
   inline ::proto::ListenRequest* release_listen_request();
-  inline void set_allocated_listen_request(::proto::ListenRequest* listen_request);
+  inline void set_allocated_listen_request(
+      ::proto::ListenRequest* listen_request);
 
   // optional .proto.ListenResponse listen_response = 2;
   inline bool has_listen_response() const;
@@ -420,7 +426,8 @@ class Body : public ::google::protobuf::Message {
   inline const ::proto::ListenResponse& listen_response() const;
   inline ::proto::ListenResponse* mutable_listen_response();
   inline ::proto::ListenResponse* release_listen_response();
-  inline void set_allocated_listen_response(::proto::ListenResponse* listen_response);
+  inline void set_allocated_listen_response(
+      ::proto::ListenResponse* listen_response);
 
   // optional .proto.Ping ping = 3;
   inline bool has_ping() const;
@@ -447,7 +454,8 @@ class Body : public ::google::protobuf::Message {
   inline const ::proto::LogoutRequest& logout_request() const;
   inline ::proto::LogoutRequest* mutable_logout_request();
   inline ::proto::LogoutRequest* release_logout_request();
-  inline void set_allocated_logout_request(::proto::LogoutRequest* logout_request);
+  inline void set_allocated_logout_request(
+      ::proto::LogoutRequest* logout_request);
 
   // optional .proto.LogoutResponse logout_response = 6;
   inline bool has_logout_response() const;
@@ -456,7 +464,8 @@ class Body : public ::google::protobuf::Message {
   inline const ::proto::LogoutResponse& logout_response() const;
   inline ::proto::LogoutResponse* mutable_logout_response();
   inline ::proto::LogoutResponse* release_logout_response();
-  inline void set_allocated_logout_response(::proto::LogoutResponse* logout_response);
+  inline void set_allocated_logout_response(
+      ::proto::LogoutResponse* logout_response);
 
   // optional .proto.NewConnectionRequest new_connection_request = 7;
   inline bool has_new_connection_request() const;
@@ -465,7 +474,8 @@ class Body : public ::google::protobuf::Message {
   inline const ::proto::NewConnectionRequest& new_connection_request() const;
   inline ::proto::NewConnectionRequest* mutable_new_connection_request();
   inline ::proto::NewConnectionRequest* release_new_connection_request();
-  inline void set_allocated_new_connection_request(::proto::NewConnectionRequest* new_connection_request);
+  inline void set_allocated_new_connection_request(
+      ::proto::NewConnectionRequest* new_connection_request);
 
   // optional .proto.NewConnectionResponse new_connection_response = 8;
   inline bool has_new_connection_response() const;
@@ -474,25 +484,30 @@ class Body : public ::google::protobuf::Message {
   inline const ::proto::NewConnectionResponse& new_connection_response() const;
   inline ::proto::NewConnectionResponse* mutable_new_connection_response();
   inline ::proto::NewConnectionResponse* release_new_connection_response();
-  inline void set_allocated_new_connection_response(::proto::NewConnectionResponse* new_connection_response);
+  inline void set_allocated_new_connection_response(
+      ::proto::NewConnectionResponse* new_connection_response);
 
   // optional .proto.CloseConnectionRequest close_connection_request = 9;
   inline bool has_close_connection_request() const;
   inline void clear_close_connection_request();
   static const int kCloseConnectionRequestFieldNumber = 9;
-  inline const ::proto::CloseConnectionRequest& close_connection_request() const;
+  inline const ::proto::CloseConnectionRequest& close_connection_request()
+      const;
   inline ::proto::CloseConnectionRequest* mutable_close_connection_request();
   inline ::proto::CloseConnectionRequest* release_close_connection_request();
-  inline void set_allocated_close_connection_request(::proto::CloseConnectionRequest* close_connection_request);
+  inline void set_allocated_close_connection_request(
+      ::proto::CloseConnectionRequest* close_connection_request);
 
   // optional .proto.CloseConnectionResponse close_connection_response = 10;
   inline bool has_close_connection_response() const;
   inline void clear_close_connection_response();
   static const int kCloseConnectionResponseFieldNumber = 10;
-  inline const ::proto::CloseConnectionResponse& close_connection_response() const;
+  inline const ::proto::CloseConnectionResponse& close_connection_response()
+      const;
   inline ::proto::CloseConnectionResponse* mutable_close_connection_response();
   inline ::proto::CloseConnectionResponse* release_close_connection_response();
-  inline void set_allocated_close_connection_response(::proto::CloseConnectionResponse* close_connection_response);
+  inline void set_allocated_close_connection_response(
+      ::proto::CloseConnectionResponse* close_connection_response);
 
   // optional .proto.DataRequest data_request = 11;
   inline bool has_data_request() const;
@@ -557,7 +572,7 @@ class Body : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(12 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -606,14 +621,16 @@ class ResponseCode : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -654,7 +671,7 @@ class ResponseCode : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -703,14 +720,16 @@ class ListenRequest : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -737,8 +756,10 @@ class ListenRequest : public ::google::protobuf::Message {
   inline void add_self_ipv6(const ::std::string& value);
   inline void add_self_ipv6(const char* value);
   inline void add_self_ipv6(const void* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& self_ipv6() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_self_ipv6();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& self_ipv6()
+      const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+  mutable_self_ipv6();
 
   // required uint32 self_port = 3;
   inline bool has_self_port() const;
@@ -773,7 +794,7 @@ class ListenRequest : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -822,14 +843,16 @@ class ListenResponse : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -867,7 +890,7 @@ class ListenResponse : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -916,14 +939,16 @@ class Ping : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -949,7 +974,7 @@ class Ping : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -998,14 +1023,16 @@ class Pong : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1043,7 +1070,7 @@ class Pong : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1092,14 +1119,16 @@ class LogoutRequest : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1108,14 +1137,12 @@ class LogoutRequest : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:proto.LogoutRequest)
  private:
-
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[1];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1164,14 +1191,16 @@ class LogoutResponse : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1199,7 +1228,7 @@ class LogoutResponse : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1248,14 +1277,16 @@ class NewConnectionRequest : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1282,7 +1313,8 @@ class NewConnectionRequest : public ::google::protobuf::Message {
   inline void add_ip_v6(const ::std::string& value);
   inline void add_ip_v6(const char* value);
   inline void add_ip_v6(const void* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& ip_v6() const;
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& ip_v6()
+      const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_ip_v6();
 
   // required uint32 port = 3;
@@ -1318,7 +1350,7 @@ class NewConnectionRequest : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1367,14 +1399,16 @@ class NewConnectionResponse : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1402,7 +1436,7 @@ class NewConnectionResponse : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1451,14 +1485,16 @@ class CloseConnectionRequest : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1484,7 +1520,7 @@ class CloseConnectionRequest : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1500,7 +1536,8 @@ class CloseConnectionResponse : public ::google::protobuf::Message {
 
   CloseConnectionResponse(const CloseConnectionResponse& from);
 
-  inline CloseConnectionResponse& operator=(const CloseConnectionResponse& from) {
+  inline CloseConnectionResponse& operator=(
+      const CloseConnectionResponse& from) {
     CopyFrom(from);
     return *this;
   }
@@ -1533,14 +1570,16 @@ class CloseConnectionResponse : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1568,7 +1607,7 @@ class CloseConnectionResponse : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1617,14 +1656,16 @@ class DataRequest : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1651,7 +1692,8 @@ class DataRequest : public ::google::protobuf::Message {
   inline void add_data(const ::std::string& value);
   inline void add_data(const char* value);
   inline void add_data(const void* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& data() const;
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& data()
+      const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_data();
 
   // @@protoc_insertion_point(class_scope:proto.DataRequest)
@@ -1667,7 +1709,7 @@ class DataRequest : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1716,14 +1758,16 @@ class DataResponse : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
-  private:
+
+ private:
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -1751,7 +1795,7 @@ class DataResponse : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
-  friend void  protobuf_AddDesc_message_2eproto();
+  friend void protobuf_AddDesc_message_2eproto();
   friend void protobuf_AssignDesc_message_2eproto();
   friend void protobuf_ShutdownFile_message_2eproto();
 
@@ -1759,7 +1803,6 @@ class DataResponse : public ::google::protobuf::Message {
   static DataResponse* default_instance_;
 };
 // ===================================================================
-
 
 // ===================================================================
 
@@ -1769,12 +1812,8 @@ class DataResponse : public ::google::protobuf::Message {
 inline bool Message::has_head() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Message::set_has_head() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Message::clear_has_head() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void Message::set_has_head() { _has_bits_[0] |= 0x00000001u; }
+inline void Message::clear_has_head() { _has_bits_[0] &= ~0x00000001u; }
 inline void Message::clear_head() {
   if (head_ != NULL) head_->::proto::Head::Clear();
   clear_has_head();
@@ -1807,12 +1846,8 @@ inline void Message::set_allocated_head(::proto::Head* head) {
 inline bool Message::has_body() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Message::set_has_body() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Message::clear_has_body() {
-  _has_bits_[0] &= ~0x00000002u;
-}
+inline void Message::set_has_body() { _has_bits_[0] |= 0x00000002u; }
+inline void Message::clear_has_body() { _has_bits_[0] &= ~0x00000002u; }
 inline void Message::clear_body() {
   if (body_ != NULL) body_->::proto::Body::Clear();
   clear_has_body();
@@ -1849,19 +1884,13 @@ inline void Message::set_allocated_body(::proto::Body* body) {
 inline bool Head::has_version() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Head::set_has_version() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Head::clear_has_version() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void Head::set_has_version() { _has_bits_[0] |= 0x00000001u; }
+inline void Head::clear_has_version() { _has_bits_[0] &= ~0x00000001u; }
 inline void Head::clear_version() {
   version_ = 0u;
   clear_has_version();
 }
-inline ::google::protobuf::uint32 Head::version() const {
-  return version_;
-}
+inline ::google::protobuf::uint32 Head::version() const { return version_; }
 inline void Head::set_version(::google::protobuf::uint32 value) {
   set_has_version();
   version_ = value;
@@ -1871,12 +1900,8 @@ inline void Head::set_version(::google::protobuf::uint32 value) {
 inline bool Head::has_random_num() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Head::set_has_random_num() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Head::clear_has_random_num() {
-  _has_bits_[0] &= ~0x00000002u;
-}
+inline void Head::set_has_random_num() { _has_bits_[0] |= 0x00000002u; }
+inline void Head::clear_has_random_num() { _has_bits_[0] &= ~0x00000002u; }
 inline void Head::clear_random_num() {
   random_num_ = 0u;
   clear_has_random_num();
@@ -1893,19 +1918,13 @@ inline void Head::set_random_num(::google::protobuf::uint32 value) {
 inline bool Head::has_flow_no() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void Head::set_has_flow_no() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void Head::clear_has_flow_no() {
-  _has_bits_[0] &= ~0x00000004u;
-}
+inline void Head::set_has_flow_no() { _has_bits_[0] |= 0x00000004u; }
+inline void Head::clear_has_flow_no() { _has_bits_[0] &= ~0x00000004u; }
 inline void Head::clear_flow_no() {
   flow_no_ = 0u;
   clear_has_flow_no();
 }
-inline ::google::protobuf::uint32 Head::flow_no() const {
-  return flow_no_;
-}
+inline ::google::protobuf::uint32 Head::flow_no() const { return flow_no_; }
 inline void Head::set_flow_no(::google::protobuf::uint32 value) {
   set_has_flow_no();
   flow_no_ = value;
@@ -1915,12 +1934,8 @@ inline void Head::set_flow_no(::google::protobuf::uint32 value) {
 inline bool Head::has_message_type() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void Head::set_has_message_type() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void Head::clear_has_message_type() {
-  _has_bits_[0] &= ~0x00000008u;
-}
+inline void Head::set_has_message_type() { _has_bits_[0] |= 0x00000008u; }
+inline void Head::clear_has_message_type() { _has_bits_[0] &= ~0x00000008u; }
 inline void Head::clear_message_type() {
   message_type_ = 0;
   clear_has_message_type();
@@ -1937,12 +1952,8 @@ inline void Head::set_message_type(::google::protobuf::int32 value) {
 inline bool Head::has_source_entity() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void Head::set_has_source_entity() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void Head::clear_has_source_entity() {
-  _has_bits_[0] &= ~0x00000010u;
-}
+inline void Head::set_has_source_entity() { _has_bits_[0] |= 0x00000010u; }
+inline void Head::clear_has_source_entity() { _has_bits_[0] &= ~0x00000010u; }
 inline void Head::clear_source_entity() {
   source_entity_ = 0u;
   clear_has_source_entity();
@@ -1959,12 +1970,8 @@ inline void Head::set_source_entity(::google::protobuf::uint32 value) {
 inline bool Head::has_dest_entity() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void Head::set_has_dest_entity() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void Head::clear_has_dest_entity() {
-  _has_bits_[0] &= ~0x00000020u;
-}
+inline void Head::set_has_dest_entity() { _has_bits_[0] |= 0x00000020u; }
+inline void Head::clear_has_dest_entity() { _has_bits_[0] &= ~0x00000020u; }
 inline void Head::clear_dest_entity() {
   dest_entity_ = 0u;
   clear_has_dest_entity();
@@ -1981,12 +1988,8 @@ inline void Head::set_dest_entity(::google::protobuf::uint32 value) {
 inline bool Head::has_call_purpose() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void Head::set_has_call_purpose() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void Head::clear_has_call_purpose() {
-  _has_bits_[0] &= ~0x00000040u;
-}
+inline void Head::set_has_call_purpose() { _has_bits_[0] |= 0x00000040u; }
+inline void Head::clear_has_call_purpose() { _has_bits_[0] &= ~0x00000040u; }
 inline void Head::clear_call_purpose() {
   if (call_purpose_ != &::google::protobuf::internal::kEmptyString) {
     call_purpose_->clear();
@@ -2030,7 +2033,8 @@ inline ::std::string* Head::release_call_purpose() {
     return NULL;
   } else {
     ::std::string* temp = call_purpose_;
-    call_purpose_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    call_purpose_ = const_cast< ::std::string*>(
+        &::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
@@ -2043,7 +2047,8 @@ inline void Head::set_allocated_call_purpose(::std::string* call_purpose) {
     call_purpose_ = call_purpose;
   } else {
     clear_has_call_purpose();
-    call_purpose_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    call_purpose_ = const_cast< ::std::string*>(
+        &::google::protobuf::internal::kEmptyString);
   }
 }
 
@@ -2051,21 +2056,15 @@ inline void Head::set_allocated_call_purpose(::std::string* call_purpose) {
 inline bool Head::has_auth_key() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
-inline void Head::set_has_auth_key() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void Head::clear_has_auth_key() {
-  _has_bits_[0] &= ~0x00000080u;
-}
+inline void Head::set_has_auth_key() { _has_bits_[0] |= 0x00000080u; }
+inline void Head::clear_has_auth_key() { _has_bits_[0] &= ~0x00000080u; }
 inline void Head::clear_auth_key() {
   if (auth_key_ != &::google::protobuf::internal::kEmptyString) {
     auth_key_->clear();
   }
   clear_has_auth_key();
 }
-inline const ::std::string& Head::auth_key() const {
-  return *auth_key_;
-}
+inline const ::std::string& Head::auth_key() const { return *auth_key_; }
 inline void Head::set_auth_key(const ::std::string& value) {
   set_has_auth_key();
   if (auth_key_ == &::google::protobuf::internal::kEmptyString) {
@@ -2100,7 +2099,8 @@ inline ::std::string* Head::release_auth_key() {
     return NULL;
   } else {
     ::std::string* temp = auth_key_;
-    auth_key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    auth_key_ = const_cast< ::std::string*>(
+        &::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
@@ -2113,7 +2113,8 @@ inline void Head::set_allocated_auth_key(::std::string* auth_key) {
     auth_key_ = auth_key;
   } else {
     clear_has_auth_key();
-    auth_key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    auth_key_ = const_cast< ::std::string*>(
+        &::google::protobuf::internal::kEmptyString);
   }
 }
 
@@ -2121,12 +2122,8 @@ inline void Head::set_allocated_auth_key(::std::string* auth_key) {
 inline bool Head::has_session_key() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
-inline void Head::set_has_session_key() {
-  _has_bits_[0] |= 0x00000100u;
-}
-inline void Head::clear_has_session_key() {
-  _has_bits_[0] &= ~0x00000100u;
-}
+inline void Head::set_has_session_key() { _has_bits_[0] |= 0x00000100u; }
+inline void Head::clear_has_session_key() { _has_bits_[0] &= ~0x00000100u; }
 inline void Head::clear_session_key() {
   session_key_ = GOOGLE_ULONGLONG(0);
   clear_has_session_key();
@@ -2147,18 +2144,15 @@ inline void Head::set_session_key(::google::protobuf::uint64 value) {
 inline bool Body::has_listen_request() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Body::set_has_listen_request() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Body::clear_has_listen_request() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void Body::set_has_listen_request() { _has_bits_[0] |= 0x00000001u; }
+inline void Body::clear_has_listen_request() { _has_bits_[0] &= ~0x00000001u; }
 inline void Body::clear_listen_request() {
   if (listen_request_ != NULL) listen_request_->::proto::ListenRequest::Clear();
   clear_has_listen_request();
 }
 inline const ::proto::ListenRequest& Body::listen_request() const {
-  return listen_request_ != NULL ? *listen_request_ : *default_instance_->listen_request_;
+  return listen_request_ != NULL ? *listen_request_
+                                 : *default_instance_->listen_request_;
 }
 inline ::proto::ListenRequest* Body::mutable_listen_request() {
   set_has_listen_request();
@@ -2171,7 +2165,8 @@ inline ::proto::ListenRequest* Body::release_listen_request() {
   listen_request_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_listen_request(::proto::ListenRequest* listen_request) {
+inline void Body::set_allocated_listen_request(
+    ::proto::ListenRequest* listen_request) {
   delete listen_request_;
   listen_request_ = listen_request;
   if (listen_request) {
@@ -2185,18 +2180,16 @@ inline void Body::set_allocated_listen_request(::proto::ListenRequest* listen_re
 inline bool Body::has_listen_response() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Body::set_has_listen_response() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Body::clear_has_listen_response() {
-  _has_bits_[0] &= ~0x00000002u;
-}
+inline void Body::set_has_listen_response() { _has_bits_[0] |= 0x00000002u; }
+inline void Body::clear_has_listen_response() { _has_bits_[0] &= ~0x00000002u; }
 inline void Body::clear_listen_response() {
-  if (listen_response_ != NULL) listen_response_->::proto::ListenResponse::Clear();
+  if (listen_response_ != NULL)
+    listen_response_->::proto::ListenResponse::Clear();
   clear_has_listen_response();
 }
 inline const ::proto::ListenResponse& Body::listen_response() const {
-  return listen_response_ != NULL ? *listen_response_ : *default_instance_->listen_response_;
+  return listen_response_ != NULL ? *listen_response_
+                                  : *default_instance_->listen_response_;
 }
 inline ::proto::ListenResponse* Body::mutable_listen_response() {
   set_has_listen_response();
@@ -2209,7 +2202,8 @@ inline ::proto::ListenResponse* Body::release_listen_response() {
   listen_response_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_listen_response(::proto::ListenResponse* listen_response) {
+inline void Body::set_allocated_listen_response(
+    ::proto::ListenResponse* listen_response) {
   delete listen_response_;
   listen_response_ = listen_response;
   if (listen_response) {
@@ -2223,12 +2217,8 @@ inline void Body::set_allocated_listen_response(::proto::ListenResponse* listen_
 inline bool Body::has_ping() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void Body::set_has_ping() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void Body::clear_has_ping() {
-  _has_bits_[0] &= ~0x00000004u;
-}
+inline void Body::set_has_ping() { _has_bits_[0] |= 0x00000004u; }
+inline void Body::clear_has_ping() { _has_bits_[0] &= ~0x00000004u; }
 inline void Body::clear_ping() {
   if (ping_ != NULL) ping_->::proto::Ping::Clear();
   clear_has_ping();
@@ -2261,12 +2251,8 @@ inline void Body::set_allocated_ping(::proto::Ping* ping) {
 inline bool Body::has_pong() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void Body::set_has_pong() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void Body::clear_has_pong() {
-  _has_bits_[0] &= ~0x00000008u;
-}
+inline void Body::set_has_pong() { _has_bits_[0] |= 0x00000008u; }
+inline void Body::clear_has_pong() { _has_bits_[0] &= ~0x00000008u; }
 inline void Body::clear_pong() {
   if (pong_ != NULL) pong_->::proto::Pong::Clear();
   clear_has_pong();
@@ -2299,18 +2285,15 @@ inline void Body::set_allocated_pong(::proto::Pong* pong) {
 inline bool Body::has_logout_request() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void Body::set_has_logout_request() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void Body::clear_has_logout_request() {
-  _has_bits_[0] &= ~0x00000010u;
-}
+inline void Body::set_has_logout_request() { _has_bits_[0] |= 0x00000010u; }
+inline void Body::clear_has_logout_request() { _has_bits_[0] &= ~0x00000010u; }
 inline void Body::clear_logout_request() {
   if (logout_request_ != NULL) logout_request_->::proto::LogoutRequest::Clear();
   clear_has_logout_request();
 }
 inline const ::proto::LogoutRequest& Body::logout_request() const {
-  return logout_request_ != NULL ? *logout_request_ : *default_instance_->logout_request_;
+  return logout_request_ != NULL ? *logout_request_
+                                 : *default_instance_->logout_request_;
 }
 inline ::proto::LogoutRequest* Body::mutable_logout_request() {
   set_has_logout_request();
@@ -2323,7 +2306,8 @@ inline ::proto::LogoutRequest* Body::release_logout_request() {
   logout_request_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_logout_request(::proto::LogoutRequest* logout_request) {
+inline void Body::set_allocated_logout_request(
+    ::proto::LogoutRequest* logout_request) {
   delete logout_request_;
   logout_request_ = logout_request;
   if (logout_request) {
@@ -2337,18 +2321,16 @@ inline void Body::set_allocated_logout_request(::proto::LogoutRequest* logout_re
 inline bool Body::has_logout_response() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void Body::set_has_logout_response() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void Body::clear_has_logout_response() {
-  _has_bits_[0] &= ~0x00000020u;
-}
+inline void Body::set_has_logout_response() { _has_bits_[0] |= 0x00000020u; }
+inline void Body::clear_has_logout_response() { _has_bits_[0] &= ~0x00000020u; }
 inline void Body::clear_logout_response() {
-  if (logout_response_ != NULL) logout_response_->::proto::LogoutResponse::Clear();
+  if (logout_response_ != NULL)
+    logout_response_->::proto::LogoutResponse::Clear();
   clear_has_logout_response();
 }
 inline const ::proto::LogoutResponse& Body::logout_response() const {
-  return logout_response_ != NULL ? *logout_response_ : *default_instance_->logout_response_;
+  return logout_response_ != NULL ? *logout_response_
+                                  : *default_instance_->logout_response_;
 }
 inline ::proto::LogoutResponse* Body::mutable_logout_response() {
   set_has_logout_response();
@@ -2361,7 +2343,8 @@ inline ::proto::LogoutResponse* Body::release_logout_response() {
   logout_response_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_logout_response(::proto::LogoutResponse* logout_response) {
+inline void Body::set_allocated_logout_response(
+    ::proto::LogoutResponse* logout_response) {
   delete logout_response_;
   logout_response_ = logout_response;
   if (logout_response) {
@@ -2382,15 +2365,20 @@ inline void Body::clear_has_new_connection_request() {
   _has_bits_[0] &= ~0x00000040u;
 }
 inline void Body::clear_new_connection_request() {
-  if (new_connection_request_ != NULL) new_connection_request_->::proto::NewConnectionRequest::Clear();
+  if (new_connection_request_ != NULL)
+    new_connection_request_->::proto::NewConnectionRequest::Clear();
   clear_has_new_connection_request();
 }
-inline const ::proto::NewConnectionRequest& Body::new_connection_request() const {
-  return new_connection_request_ != NULL ? *new_connection_request_ : *default_instance_->new_connection_request_;
+inline const ::proto::NewConnectionRequest& Body::new_connection_request()
+    const {
+  return new_connection_request_ != NULL
+             ? *new_connection_request_
+             : *default_instance_->new_connection_request_;
 }
 inline ::proto::NewConnectionRequest* Body::mutable_new_connection_request() {
   set_has_new_connection_request();
-  if (new_connection_request_ == NULL) new_connection_request_ = new ::proto::NewConnectionRequest;
+  if (new_connection_request_ == NULL)
+    new_connection_request_ = new ::proto::NewConnectionRequest;
   return new_connection_request_;
 }
 inline ::proto::NewConnectionRequest* Body::release_new_connection_request() {
@@ -2399,7 +2387,8 @@ inline ::proto::NewConnectionRequest* Body::release_new_connection_request() {
   new_connection_request_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_new_connection_request(::proto::NewConnectionRequest* new_connection_request) {
+inline void Body::set_allocated_new_connection_request(
+    ::proto::NewConnectionRequest* new_connection_request) {
   delete new_connection_request_;
   new_connection_request_ = new_connection_request;
   if (new_connection_request) {
@@ -2420,15 +2409,20 @@ inline void Body::clear_has_new_connection_response() {
   _has_bits_[0] &= ~0x00000080u;
 }
 inline void Body::clear_new_connection_response() {
-  if (new_connection_response_ != NULL) new_connection_response_->::proto::NewConnectionResponse::Clear();
+  if (new_connection_response_ != NULL)
+    new_connection_response_->::proto::NewConnectionResponse::Clear();
   clear_has_new_connection_response();
 }
-inline const ::proto::NewConnectionResponse& Body::new_connection_response() const {
-  return new_connection_response_ != NULL ? *new_connection_response_ : *default_instance_->new_connection_response_;
+inline const ::proto::NewConnectionResponse& Body::new_connection_response()
+    const {
+  return new_connection_response_ != NULL
+             ? *new_connection_response_
+             : *default_instance_->new_connection_response_;
 }
 inline ::proto::NewConnectionResponse* Body::mutable_new_connection_response() {
   set_has_new_connection_response();
-  if (new_connection_response_ == NULL) new_connection_response_ = new ::proto::NewConnectionResponse;
+  if (new_connection_response_ == NULL)
+    new_connection_response_ = new ::proto::NewConnectionResponse;
   return new_connection_response_;
 }
 inline ::proto::NewConnectionResponse* Body::release_new_connection_response() {
@@ -2437,7 +2431,8 @@ inline ::proto::NewConnectionResponse* Body::release_new_connection_response() {
   new_connection_response_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_new_connection_response(::proto::NewConnectionResponse* new_connection_response) {
+inline void Body::set_allocated_new_connection_response(
+    ::proto::NewConnectionResponse* new_connection_response) {
   delete new_connection_response_;
   new_connection_response_ = new_connection_response;
   if (new_connection_response) {
@@ -2458,24 +2453,32 @@ inline void Body::clear_has_close_connection_request() {
   _has_bits_[0] &= ~0x00000100u;
 }
 inline void Body::clear_close_connection_request() {
-  if (close_connection_request_ != NULL) close_connection_request_->::proto::CloseConnectionRequest::Clear();
+  if (close_connection_request_ != NULL)
+    close_connection_request_->::proto::CloseConnectionRequest::Clear();
   clear_has_close_connection_request();
 }
-inline const ::proto::CloseConnectionRequest& Body::close_connection_request() const {
-  return close_connection_request_ != NULL ? *close_connection_request_ : *default_instance_->close_connection_request_;
+inline const ::proto::CloseConnectionRequest& Body::close_connection_request()
+    const {
+  return close_connection_request_ != NULL
+             ? *close_connection_request_
+             : *default_instance_->close_connection_request_;
 }
-inline ::proto::CloseConnectionRequest* Body::mutable_close_connection_request() {
+inline ::proto::CloseConnectionRequest*
+Body::mutable_close_connection_request() {
   set_has_close_connection_request();
-  if (close_connection_request_ == NULL) close_connection_request_ = new ::proto::CloseConnectionRequest;
+  if (close_connection_request_ == NULL)
+    close_connection_request_ = new ::proto::CloseConnectionRequest;
   return close_connection_request_;
 }
-inline ::proto::CloseConnectionRequest* Body::release_close_connection_request() {
+inline ::proto::CloseConnectionRequest*
+Body::release_close_connection_request() {
   clear_has_close_connection_request();
   ::proto::CloseConnectionRequest* temp = close_connection_request_;
   close_connection_request_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_close_connection_request(::proto::CloseConnectionRequest* close_connection_request) {
+inline void Body::set_allocated_close_connection_request(
+    ::proto::CloseConnectionRequest* close_connection_request) {
   delete close_connection_request_;
   close_connection_request_ = close_connection_request;
   if (close_connection_request) {
@@ -2496,24 +2499,32 @@ inline void Body::clear_has_close_connection_response() {
   _has_bits_[0] &= ~0x00000200u;
 }
 inline void Body::clear_close_connection_response() {
-  if (close_connection_response_ != NULL) close_connection_response_->::proto::CloseConnectionResponse::Clear();
+  if (close_connection_response_ != NULL)
+    close_connection_response_->::proto::CloseConnectionResponse::Clear();
   clear_has_close_connection_response();
 }
-inline const ::proto::CloseConnectionResponse& Body::close_connection_response() const {
-  return close_connection_response_ != NULL ? *close_connection_response_ : *default_instance_->close_connection_response_;
+inline const ::proto::CloseConnectionResponse& Body::close_connection_response()
+    const {
+  return close_connection_response_ != NULL
+             ? *close_connection_response_
+             : *default_instance_->close_connection_response_;
 }
-inline ::proto::CloseConnectionResponse* Body::mutable_close_connection_response() {
+inline ::proto::CloseConnectionResponse*
+Body::mutable_close_connection_response() {
   set_has_close_connection_response();
-  if (close_connection_response_ == NULL) close_connection_response_ = new ::proto::CloseConnectionResponse;
+  if (close_connection_response_ == NULL)
+    close_connection_response_ = new ::proto::CloseConnectionResponse;
   return close_connection_response_;
 }
-inline ::proto::CloseConnectionResponse* Body::release_close_connection_response() {
+inline ::proto::CloseConnectionResponse*
+Body::release_close_connection_response() {
   clear_has_close_connection_response();
   ::proto::CloseConnectionResponse* temp = close_connection_response_;
   close_connection_response_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_close_connection_response(::proto::CloseConnectionResponse* close_connection_response) {
+inline void Body::set_allocated_close_connection_response(
+    ::proto::CloseConnectionResponse* close_connection_response) {
   delete close_connection_response_;
   close_connection_response_ = close_connection_response;
   if (close_connection_response) {
@@ -2527,18 +2538,15 @@ inline void Body::set_allocated_close_connection_response(::proto::CloseConnecti
 inline bool Body::has_data_request() const {
   return (_has_bits_[0] & 0x00000400u) != 0;
 }
-inline void Body::set_has_data_request() {
-  _has_bits_[0] |= 0x00000400u;
-}
-inline void Body::clear_has_data_request() {
-  _has_bits_[0] &= ~0x00000400u;
-}
+inline void Body::set_has_data_request() { _has_bits_[0] |= 0x00000400u; }
+inline void Body::clear_has_data_request() { _has_bits_[0] &= ~0x00000400u; }
 inline void Body::clear_data_request() {
   if (data_request_ != NULL) data_request_->::proto::DataRequest::Clear();
   clear_has_data_request();
 }
 inline const ::proto::DataRequest& Body::data_request() const {
-  return data_request_ != NULL ? *data_request_ : *default_instance_->data_request_;
+  return data_request_ != NULL ? *data_request_
+                               : *default_instance_->data_request_;
 }
 inline ::proto::DataRequest* Body::mutable_data_request() {
   set_has_data_request();
@@ -2551,7 +2559,8 @@ inline ::proto::DataRequest* Body::release_data_request() {
   data_request_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_data_request(::proto::DataRequest* data_request) {
+inline void Body::set_allocated_data_request(
+    ::proto::DataRequest* data_request) {
   delete data_request_;
   data_request_ = data_request;
   if (data_request) {
@@ -2565,18 +2574,15 @@ inline void Body::set_allocated_data_request(::proto::DataRequest* data_request)
 inline bool Body::has_data_response() const {
   return (_has_bits_[0] & 0x00000800u) != 0;
 }
-inline void Body::set_has_data_response() {
-  _has_bits_[0] |= 0x00000800u;
-}
-inline void Body::clear_has_data_response() {
-  _has_bits_[0] &= ~0x00000800u;
-}
+inline void Body::set_has_data_response() { _has_bits_[0] |= 0x00000800u; }
+inline void Body::clear_has_data_response() { _has_bits_[0] &= ~0x00000800u; }
 inline void Body::clear_data_response() {
   if (data_response_ != NULL) data_response_->::proto::DataResponse::Clear();
   clear_has_data_response();
 }
 inline const ::proto::DataResponse& Body::data_response() const {
-  return data_response_ != NULL ? *data_response_ : *default_instance_->data_response_;
+  return data_response_ != NULL ? *data_response_
+                                : *default_instance_->data_response_;
 }
 inline ::proto::DataResponse* Body::mutable_data_response() {
   set_has_data_response();
@@ -2589,7 +2595,8 @@ inline ::proto::DataResponse* Body::release_data_response() {
   data_response_ = NULL;
   return temp;
 }
-inline void Body::set_allocated_data_response(::proto::DataResponse* data_response) {
+inline void Body::set_allocated_data_response(
+    ::proto::DataResponse* data_response) {
   delete data_response_;
   data_response_ = data_response;
   if (data_response) {
@@ -2607,12 +2614,8 @@ inline void Body::set_allocated_data_response(::proto::DataResponse* data_respon
 inline bool ResponseCode::has_retcode() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ResponseCode::set_has_retcode() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ResponseCode::clear_has_retcode() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void ResponseCode::set_has_retcode() { _has_bits_[0] |= 0x00000001u; }
+inline void ResponseCode::clear_has_retcode() { _has_bits_[0] &= ~0x00000001u; }
 inline void ResponseCode::clear_retcode() {
   retcode_ = 0;
   clear_has_retcode();
@@ -2678,11 +2681,13 @@ inline ::std::string* ResponseCode::release_error_message() {
     return NULL;
   } else {
     ::std::string* temp = error_message_;
-    error_message_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    error_message_ = const_cast< ::std::string*>(
+        &::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
-inline void ResponseCode::set_allocated_error_message(::std::string* error_message) {
+inline void ResponseCode::set_allocated_error_message(
+    ::std::string* error_message) {
   if (error_message_ != &::google::protobuf::internal::kEmptyString) {
     delete error_message_;
   }
@@ -2691,7 +2696,8 @@ inline void ResponseCode::set_allocated_error_message(::std::string* error_messa
     error_message_ = error_message;
   } else {
     clear_has_error_message();
-    error_message_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    error_message_ = const_cast< ::std::string*>(
+        &::google::protobuf::internal::kEmptyString);
   }
 }
 
@@ -2703,9 +2709,7 @@ inline void ResponseCode::set_allocated_error_message(::std::string* error_messa
 inline bool ListenRequest::has_self_ipv4() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ListenRequest::set_has_self_ipv4() {
-  _has_bits_[0] |= 0x00000001u;
-}
+inline void ListenRequest::set_has_self_ipv4() { _has_bits_[0] |= 0x00000001u; }
 inline void ListenRequest::clear_has_self_ipv4() {
   _has_bits_[0] &= ~0x00000001u;
 }
@@ -2722,27 +2726,24 @@ inline void ListenRequest::set_self_ipv4(::google::protobuf::uint32 value) {
 }
 
 // repeated bytes self_ipv6 = 2;
-inline int ListenRequest::self_ipv6_size() const {
-  return self_ipv6_.size();
-}
-inline void ListenRequest::clear_self_ipv6() {
-  self_ipv6_.Clear();
-}
+inline int ListenRequest::self_ipv6_size() const { return self_ipv6_.size(); }
+inline void ListenRequest::clear_self_ipv6() { self_ipv6_.Clear(); }
 inline const ::std::string& ListenRequest::self_ipv6(int index) const {
   return self_ipv6_.Get(index);
 }
 inline ::std::string* ListenRequest::mutable_self_ipv6(int index) {
   return self_ipv6_.Mutable(index);
 }
-inline void ListenRequest::set_self_ipv6(int index, const ::std::string& value) {
+inline void ListenRequest::set_self_ipv6(int index,
+                                         const ::std::string& value) {
   self_ipv6_.Mutable(index)->assign(value);
 }
 inline void ListenRequest::set_self_ipv6(int index, const char* value) {
   self_ipv6_.Mutable(index)->assign(value);
 }
-inline void ListenRequest::set_self_ipv6(int index, const void* value, size_t size) {
-  self_ipv6_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
+inline void ListenRequest::set_self_ipv6(int index, const void* value,
+                                         size_t size) {
+  self_ipv6_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* ListenRequest::add_self_ipv6() {
   return self_ipv6_.Add();
@@ -2769,9 +2770,7 @@ ListenRequest::mutable_self_ipv6() {
 inline bool ListenRequest::has_self_port() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void ListenRequest::set_has_self_port() {
-  _has_bits_[0] |= 0x00000004u;
-}
+inline void ListenRequest::set_has_self_port() { _has_bits_[0] |= 0x00000004u; }
 inline void ListenRequest::clear_has_self_port() {
   _has_bits_[0] &= ~0x00000004u;
 }
@@ -2817,12 +2816,8 @@ inline void ListenRequest::set_listen_port(::google::protobuf::uint32 value) {
 inline bool ListenResponse::has_rc() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ListenResponse::set_has_rc() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ListenResponse::clear_has_rc() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void ListenResponse::set_has_rc() { _has_bits_[0] |= 0x00000001u; }
+inline void ListenResponse::clear_has_rc() { _has_bits_[0] &= ~0x00000001u; }
 inline void ListenResponse::clear_rc() {
   if (rc_ != NULL) rc_->::proto::ResponseCode::Clear();
   clear_has_rc();
@@ -2881,19 +2876,13 @@ inline void ListenResponse::set_session_key(::google::protobuf::uint64 value) {
 inline bool Ping::has_time() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Ping::set_has_time() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Ping::clear_has_time() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void Ping::set_has_time() { _has_bits_[0] |= 0x00000001u; }
+inline void Ping::clear_has_time() { _has_bits_[0] &= ~0x00000001u; }
 inline void Ping::clear_time() {
   time_ = GOOGLE_ULONGLONG(0);
   clear_has_time();
 }
-inline ::google::protobuf::uint64 Ping::time() const {
-  return time_;
-}
+inline ::google::protobuf::uint64 Ping::time() const { return time_; }
 inline void Ping::set_time(::google::protobuf::uint64 value) {
   set_has_time();
   time_ = value;
@@ -2904,15 +2893,9 @@ inline void Ping::set_time(::google::protobuf::uint64 value) {
 // Pong
 
 // required .proto.ResponseCode rc = 1;
-inline bool Pong::has_rc() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void Pong::set_has_rc() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Pong::clear_has_rc() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline bool Pong::has_rc() const { return (_has_bits_[0] & 0x00000001u) != 0; }
+inline void Pong::set_has_rc() { _has_bits_[0] |= 0x00000001u; }
+inline void Pong::clear_has_rc() { _has_bits_[0] &= ~0x00000001u; }
 inline void Pong::clear_rc() {
   if (rc_ != NULL) rc_->::proto::ResponseCode::Clear();
   clear_has_rc();
@@ -2945,19 +2928,13 @@ inline void Pong::set_allocated_rc(::proto::ResponseCode* rc) {
 inline bool Pong::has_time() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Pong::set_has_time() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Pong::clear_has_time() {
-  _has_bits_[0] &= ~0x00000002u;
-}
+inline void Pong::set_has_time() { _has_bits_[0] |= 0x00000002u; }
+inline void Pong::clear_has_time() { _has_bits_[0] &= ~0x00000002u; }
 inline void Pong::clear_time() {
   time_ = GOOGLE_ULONGLONG(0);
   clear_has_time();
 }
-inline ::google::protobuf::uint64 Pong::time() const {
-  return time_;
-}
+inline ::google::protobuf::uint64 Pong::time() const { return time_; }
 inline void Pong::set_time(::google::protobuf::uint64 value) {
   set_has_time();
   time_ = value;
@@ -2975,12 +2952,8 @@ inline void Pong::set_time(::google::protobuf::uint64 value) {
 inline bool LogoutResponse::has_rc() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void LogoutResponse::set_has_rc() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void LogoutResponse::clear_has_rc() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void LogoutResponse::set_has_rc() { _has_bits_[0] |= 0x00000001u; }
+inline void LogoutResponse::clear_has_rc() { _has_bits_[0] &= ~0x00000001u; }
 inline void LogoutResponse::clear_rc() {
   if (rc_ != NULL) rc_->::proto::ResponseCode::Clear();
   clear_has_rc();
@@ -3036,31 +3009,26 @@ inline void NewConnectionRequest::set_ip_v4(::google::protobuf::uint32 value) {
 }
 
 // repeated bytes ip_v6 = 2;
-inline int NewConnectionRequest::ip_v6_size() const {
-  return ip_v6_.size();
-}
-inline void NewConnectionRequest::clear_ip_v6() {
-  ip_v6_.Clear();
-}
+inline int NewConnectionRequest::ip_v6_size() const { return ip_v6_.size(); }
+inline void NewConnectionRequest::clear_ip_v6() { ip_v6_.Clear(); }
 inline const ::std::string& NewConnectionRequest::ip_v6(int index) const {
   return ip_v6_.Get(index);
 }
 inline ::std::string* NewConnectionRequest::mutable_ip_v6(int index) {
   return ip_v6_.Mutable(index);
 }
-inline void NewConnectionRequest::set_ip_v6(int index, const ::std::string& value) {
+inline void NewConnectionRequest::set_ip_v6(int index,
+                                            const ::std::string& value) {
   ip_v6_.Mutable(index)->assign(value);
 }
 inline void NewConnectionRequest::set_ip_v6(int index, const char* value) {
   ip_v6_.Mutable(index)->assign(value);
 }
-inline void NewConnectionRequest::set_ip_v6(int index, const void* value, size_t size) {
-  ip_v6_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
+inline void NewConnectionRequest::set_ip_v6(int index, const void* value,
+                                            size_t size) {
+  ip_v6_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* NewConnectionRequest::add_ip_v6() {
-  return ip_v6_.Add();
-}
+inline ::std::string* NewConnectionRequest::add_ip_v6() { return ip_v6_.Add(); }
 inline void NewConnectionRequest::add_ip_v6(const ::std::string& value) {
   ip_v6_.Add()->assign(value);
 }
@@ -3118,7 +3086,8 @@ inline void NewConnectionRequest::clear_conn_key() {
 inline ::google::protobuf::uint64 NewConnectionRequest::conn_key() const {
   return conn_key_;
 }
-inline void NewConnectionRequest::set_conn_key(::google::protobuf::uint64 value) {
+inline void NewConnectionRequest::set_conn_key(
+    ::google::protobuf::uint64 value) {
   set_has_conn_key();
   conn_key_ = value;
 }
@@ -3186,7 +3155,8 @@ inline void CloseConnectionRequest::clear_conn_key() {
 inline ::google::protobuf::uint64 CloseConnectionRequest::conn_key() const {
   return conn_key_;
 }
-inline void CloseConnectionRequest::set_conn_key(::google::protobuf::uint64 value) {
+inline void CloseConnectionRequest::set_conn_key(
+    ::google::protobuf::uint64 value) {
   set_has_conn_key();
   conn_key_ = value;
 }
@@ -3223,7 +3193,8 @@ inline ::proto::ResponseCode* CloseConnectionResponse::release_rc() {
   rc_ = NULL;
   return temp;
 }
-inline void CloseConnectionResponse::set_allocated_rc(::proto::ResponseCode* rc) {
+inline void CloseConnectionResponse::set_allocated_rc(
+    ::proto::ResponseCode* rc) {
   delete rc_;
   rc_ = rc;
   if (rc) {
@@ -3241,12 +3212,8 @@ inline void CloseConnectionResponse::set_allocated_rc(::proto::ResponseCode* rc)
 inline bool DataRequest::has_conn_key() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void DataRequest::set_has_conn_key() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void DataRequest::clear_has_conn_key() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void DataRequest::set_has_conn_key() { _has_bits_[0] |= 0x00000001u; }
+inline void DataRequest::clear_has_conn_key() { _has_bits_[0] &= ~0x00000001u; }
 inline void DataRequest::clear_conn_key() {
   conn_key_ = GOOGLE_ULONGLONG(0);
   clear_has_conn_key();
@@ -3260,12 +3227,8 @@ inline void DataRequest::set_conn_key(::google::protobuf::uint64 value) {
 }
 
 // repeated bytes data = 2;
-inline int DataRequest::data_size() const {
-  return data_.size();
-}
-inline void DataRequest::clear_data() {
-  data_.Clear();
-}
+inline int DataRequest::data_size() const { return data_.size(); }
+inline void DataRequest::clear_data() { data_.Clear(); }
 inline const ::std::string& DataRequest::data(int index) const {
   return data_.Get(index);
 }
@@ -3279,12 +3242,9 @@ inline void DataRequest::set_data(int index, const char* value) {
   data_.Mutable(index)->assign(value);
 }
 inline void DataRequest::set_data(int index, const void* value, size_t size) {
-  data_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
+  data_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* DataRequest::add_data() {
-  return data_.Add();
-}
+inline ::std::string* DataRequest::add_data() { return data_.Add(); }
 inline void DataRequest::add_data(const ::std::string& value) {
   data_.Add()->assign(value);
 }
@@ -3311,12 +3271,8 @@ DataRequest::mutable_data() {
 inline bool DataResponse::has_rc() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void DataResponse::set_has_rc() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void DataResponse::clear_has_rc() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+inline void DataResponse::set_has_rc() { _has_bits_[0] |= 0x00000001u; }
+inline void DataResponse::clear_has_rc() { _has_bits_[0] &= ~0x00000001u; }
 inline void DataResponse::clear_rc() {
   if (rc_ != NULL) rc_->::proto::ResponseCode::Clear();
   clear_has_rc();
@@ -3344,7 +3300,6 @@ inline void DataResponse::set_allocated_rc(::proto::ResponseCode* rc) {
     clear_has_rc();
   }
 }
-
 
 // @@protoc_insertion_point(namespace_scope)
 
