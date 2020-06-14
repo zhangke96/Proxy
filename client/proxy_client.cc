@@ -36,16 +36,17 @@ void ProxyClient::StartProxyService() {
     proxy_client_->setMessageCallback(
         std::bind(&ProxyClient::OnMessage, this_ptr(), std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3));
-    proxy_client_->connection()->setHighWaterMarkCallback(
-        std::bind(&ProxyClient::OnHighWaterMark, this, true,
-                  std::placeholders::_1, std::placeholders::_2),
-        10 * MB_SIZE);
     proxy_client_->connect();
   });
 }
 
 void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &) {
   LOG_INFO << "proxy connection established";
+  // 注册高水位回调
+  proxy_client_->connection()->setHighWaterMarkCallback(
+      std::bind(&ProxyClient::OnHighWaterMark, this, true,
+                std::placeholders::_1, std::placeholders::_2),
+      10 * MB_SIZE);
   // 注册pb handle
   dispatcher_->RegisterPbHandle(
       proto::NEW_CONNECTION_REQUEST,
@@ -114,10 +115,6 @@ void ProxyClient::OnNewConnection(const muduo::net::TcpConnectionPtr &conn,
   tcp_client->SetCloseCallback(std::bind(&ProxyClient::OnClientClose,
                                          this_ptr(), std::placeholders::_1,
                                          conn_key));
-  tcp_client->Connection()->setHighWaterMarkCallback(
-      std::bind(&ProxyClient::OnHighWaterMark, this, false,
-                std::placeholders::_1, std::placeholders::_2),
-      2 * MB_SIZE);
   tcp_client->Connect();
   ProxyConnection proxy_connection;
   proxy_connection.conn_key = conn_key;
@@ -141,6 +138,11 @@ void ProxyClient::OnClientConnection(const muduo::net::TcpConnectionPtr &conn,
   ProxyConnection &proxy_connection = clients_[conn_key];
   if (proxy_connection.state == ProxyConnState::CONNECTING) {
     proxy_connection.client_conn->Connection()->setContext(conn_key);
+    // 注册高水位回调
+    conn->setHighWaterMarkCallback(
+        std::bind(&ProxyClient::OnHighWaterMark, this, false,
+                  std::placeholders::_1, std::placeholders::_2),
+        2 * MB_SIZE);
     // 连接server成功
     proxy_connection.state = ProxyConnState::CONNECTED;
     proxy_connection.server_open = true;
@@ -319,6 +321,44 @@ void ProxyClient::HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
   response_body->mutable_rc()->set_retcode(0);
   dispatcher_->SendPbResponse(proxy_client_->connection(), request_head,
                               resume_send_response);
+}
+
+void ProxyClient::StopClientRead(uint64_t conn_id) {
+  if (conn_id) {
+    auto index = clients_.find(conn_id);
+    if (index == clients_.end()) {
+      LOG_WARN << "stop conn_id:" << conn_id
+               << " read failed, not found connection";
+    } else {
+      (index->second).client_conn->Connection()->stopRead();
+      LOG_INFO << "stop conn_id:" << conn_id << " read succ";
+    }
+    return;
+  } else {
+    LOG_INFO << "stop all client connection read";
+    for (auto index = clients_.begin(); index != clients_.end(); ++index) {
+      StopClientRead(index->first);
+    }
+  }
+}
+
+void ProxyClient::ResumeClientRead(uint64_t conn_id) {
+  if (conn_id) {
+    auto index = clients_.find(conn_id);
+    if (index == clients_.end()) {
+      LOG_WARN << "resume conn_id:" << conn_id
+               << " read failed, not found connection";
+    } else {
+      (index->second).client_conn->Connection()->stopRead();
+      LOG_INFO << "resume conn_id:" << conn_id << " read succ";
+    }
+    return;
+  } else {
+    LOG_INFO << "resume all client connection read";
+    for (auto index = clients_.begin(); index != clients_.end(); ++index) {
+      ResumeClientRead(index->first);
+    }
+  }
 }
 
 void ProxyClient::OnHighWaterMark(bool is_proxy_conn,
