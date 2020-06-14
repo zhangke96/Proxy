@@ -3,12 +3,12 @@
 #include <arpa/inet.h>
 #include <dlfcn.h>
 #include <errno.h>
+#include <muduo/base/Mutex.h>
+#include <muduo/net/InetAddress.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <sys/types.h>
-#include <muduo/base/Mutex.h>
-#include <muduo/net/InetAddress.h>
+
 #include "client/proxy_client.h"
 
 typedef int (*LISTEN)(int sockfd, int backlog);

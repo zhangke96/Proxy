@@ -30,6 +30,10 @@ message Body {
     optional CloseConnectionResponse close_connection_response = 10;
     optional DataRequest data_request = 11;
     optional DataResponse data_response = 12;
+    optional PauseSendRequest pause_send_request = 13;
+    optional PauseSendResponse pause_send_response = 14;
+    optional ResumeSendRequest resume_send_request = 15;
+    optional ResumeSendResponse resume_send_response = 16;
 };
 
 enum MessageType {
@@ -45,6 +49,10 @@ enum MessageType {
     CLOSE_CONNECTION_RESONSE = 10;
     DATA_REQUEST = 11;
     DATA_RESPONSE = 12;
+    PAUSE_SEND_REQUEST = 13;
+    PAUSE_SEND_RESPONSE = 14;
+    RESUME_SEND_REQUEST = 15;
+    RESUME_SEND_RESPONSE = 16;
 };
 
 message ResponseCode {
@@ -106,5 +114,21 @@ message DataRequest {
 };
 
 message DataResponse {
+    required ResponseCode rc = 1;
+};
+
+message PauseSendRequest {
+    required uint64 conn_key = 1;
+};
+
+message PauseSendResponse {
+    required ResponseCode rc = 1;
+};
+
+message ResumeSendRequest {
+    required uint64 conn_key = 1;
+};
+
+message ResumeSendResponse {
     required ResponseCode rc = 1;
 };

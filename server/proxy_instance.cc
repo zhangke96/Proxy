@@ -1,14 +1,16 @@
 // Copyright [2020] zhangke
 
+#include "server/proxy_instance.h"
+
 #include <muduo/base/Logging.h>
 #include <muduo/net/SocketsOps.h>
+
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "common/message_util.h"
 #include "common/proto.h"
-#include "server/proxy_instance.h"
 
 ProxyInstance::ProxyInstance(muduo::net::EventLoop *loop,
                              const muduo::net::TcpConnectionPtr &conn)
@@ -30,9 +32,23 @@ void ProxyInstance::Init() {
       std::bind(&ProxyInstance::HandleCloseConnRequest, this,
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
+  dispatcher_.RegisterPbHandle(
+      proto::PAUSE_SEND_REQUEST,
+      std::bind(&ProxyInstance::HandlePauseSendRequest, this,
+                std::placeholders::_1, std::placeholders::_2,
+                std::placeholders::_3));
+  dispatcher_.RegisterPbHandle(
+      proto::RESUME_SEND_REQUEST,
+      std::bind(&ProxyInstance::HandleResumeSendRequest, this,
+                std::placeholders::_1, std::placeholders::_2,
+                std::placeholders::_3));
   dispatcher_.RegisterMsgHandle(
       DATA_REQUEST, std::bind(&ProxyInstance::HandleDataRequest, this,
                               std::placeholders::_1, std::placeholders::_2));
+  proxy_conn_->setHighWaterMarkCallback(
+      std::bind(&ProxyInstance::OnHighWaterMark, this, true,
+                std::placeholders::_1, std::placeholders::_2),
+      10 * MB_SIZE);
 }
 
 void ProxyInstance::HandleListenRequest(const muduo::net::TcpConnectionPtr,
@@ -92,6 +108,10 @@ void ProxyInstance::OnNewConnection(int sockfd,
   conn->setMessageCallback(
       std::bind(&ProxyInstance::OnClientMessage, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
+  conn->setHighWaterMarkCallback(
+      std::bind(&ProxyInstance::OnHighWaterMark, this, false,
+                std::placeholders::_1, std::placeholders::_2),
+      2 * MB_SIZE);
   io_loop->runInLoop(
       std::bind(&muduo::net::TcpConnection::connectEstablished, conn));
 }
@@ -320,3 +340,129 @@ void ProxyInstance::RemoveConnecion(uint64_t conn_id) {
       &muduo::net::TcpConnection::connectDestroyed, index->second.conn));
   conn_map_.erase(index);
 }
+
+void ProxyInstance::HandlePauseSendRequest(const muduo::net::TcpConnectionPtr,
+                                           ProxyMessagePtr request_head,
+                                           MessagePtr message) {
+  assert(message->head().message_type() == proto::PAUSE_SEND_REQUEST);
+  assert(message->body().has_pause_send_request());
+  const proto::PauseSendRequest &request = message->body().pause_send_request();
+  uint64_t conn_key = request.conn_key();
+  MessagePtr pause_send_response = std::make_shared<proto::Message>();
+  MakeResponse(message.get(), proto::PAUSE_SEND_RESPONSE,
+               pause_send_response.get());
+  proto::PauseSendResponse *response_body =
+      pause_send_response->mutable_body()->mutable_pause_send_response();
+  StopClientRead(conn_key);
+  response_body->mutable_rc()->set_retcode(0);
+  dispatcher_.SendPbResponse(proxy_conn_, request_head, pause_send_response);
+}
+
+void ProxyInstance::HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
+                                            ProxyMessagePtr request_head,
+                                            MessagePtr message) {
+  assert(message->head().message_type() == proto::RESUME_SEND_REQUEST);
+  assert(message->body().has_resume_send_request());
+  const proto::ResumeSendRequest &request =
+      message->body().resume_send_request();
+  uint64_t conn_key = request.conn_key();
+  MessagePtr resume_send_response = std::make_shared<proto::Message>();
+  MakeResponse(message.get(), proto::RESUME_SEND_RESPONSE,
+               resume_send_response.get());
+  proto::ResumeSendResponse *response_body =
+      resume_send_response->mutable_body()->mutable_resume_send_response();
+  ResumeClientRead(conn_key);
+  response_body->mutable_rc()->set_retcode(0);
+  dispatcher_.SendPbResponse(proxy_conn_, request_head, resume_send_response);
+}
+
+void ProxyInstance::StopClientRead(uint64_t conn_id) {
+  if (conn_id) {
+    auto index = conn_map_.find(conn_id);
+    if (index == conn_map_.end()) {
+      LOG_WARN << "stop conn_id:" << conn_id
+               << " read failed, not found connection";
+    } else {
+      (index->second).conn->stopRead();
+      LOG_INFO << "stop conn_id:" << conn_id << " read succ";
+    }
+    return;
+  } else {
+    LOG_INFO << "stop all client connection read";
+    for (auto index = conn_map_.begin(); index != conn_map_.end(); ++index) {
+      StopClientRead(index->first);
+    }
+  }
+}
+
+void ProxyInstance::ResumeClientRead(uint64_t conn_id) {
+  if (conn_id) {
+    auto index = conn_map_.find(conn_id);
+    if (index == conn_map_.end()) {
+      LOG_WARN << "resume conn_id:" << conn_id
+               << " read failed, not found connection";
+    } else {
+      (index->second).conn->stopRead();
+      LOG_INFO << "resume conn_id:" << conn_id << " read succ";
+    }
+    return;
+  } else {
+    LOG_INFO << "resume all client connection read";
+    for (auto index = conn_map_.begin(); index != conn_map_.end(); ++index) {
+      ResumeClientRead(index->first);
+    }
+  }
+}
+
+void ProxyInstance::OnHighWaterMark(bool is_proxy_conn,
+                                    const muduo::net::TcpConnectionPtr &conn,
+                                    size_t) {
+  if (is_proxy_conn) {
+    if (proxy_conn_->outputBuffer()->readableBytes() > 0) {
+      StopClientRead();
+      proxy_conn_->setWriteCompleteCallback(std::bind(
+          &ProxyInstance::OnWriteComplete, this, true, std::placeholders::_1));
+    }
+  } else {
+    // 客户端接收速度慢,通知proxy client
+    uint64_t conn_id = boost::any_cast<uint64_t>(conn->getContext());
+    MessagePtr message = std::make_shared<proto::Message>();
+    MakeMessage(message.get(), proto::PAUSE_SEND_REQUEST, GetSourceEntity());
+    proto::PauseSendRequest *pause_send_request =
+        message->mutable_body()->mutable_pause_send_request();
+    pause_send_request->set_conn_key(conn_id);
+    dispatcher_.SendPbRequest(
+        proxy_conn_, message,
+        std::bind(&ProxyInstance::EntryPauseSend, this_ptr(),
+                  std::placeholders::_1, conn_id),
+        nullptr);
+    conn->setWriteCompleteCallback(std::bind(
+        &ProxyInstance::OnWriteComplete, this, false, std::placeholders::_1));
+  }
+}
+
+void ProxyInstance::OnWriteComplete(bool is_proxy_conn,
+                                    const muduo::net::TcpConnectionPtr &conn) {
+  if (is_proxy_conn) {
+    ResumeClientRead();
+    proxy_conn_->setWriteCompleteCallback(muduo::net::WriteCompleteCallback());
+  } else {
+    // 通知proxy client可以继续发送
+    uint64_t conn_id = boost::any_cast<uint64_t>(conn->getContext());
+    MessagePtr message = std::make_shared<proto::Message>();
+    MakeMessage(message.get(), proto::RESUME_SEND_REQUEST, GetSourceEntity());
+    proto::ResumeSendRequest *resume_send_request =
+        message->mutable_body()->mutable_resume_send_request();
+    resume_send_request->set_conn_key(conn_id);
+    dispatcher_.SendPbRequest(
+        proxy_conn_, message,
+        std::bind(&ProxyInstance::EntryResumeSend, this_ptr(),
+                  std::placeholders::_1, conn_id),
+        nullptr);
+    conn->setWriteCompleteCallback(muduo::net::WriteCompleteCallback());
+  }
+}
+
+void ProxyInstance::EntryPauseSend(MessagePtr, uint64_t conn_id) {}
+
+void ProxyInstance::EntryResumeSend(MessagePtr, uint64_t conn_id) {}

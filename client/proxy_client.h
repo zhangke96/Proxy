@@ -8,6 +8,7 @@
 #include <muduo/net/EventLoopThread.h>
 #include <muduo/net/InetAddress.h>
 #include <muduo/net/TcpClient.h>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -67,12 +68,25 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
   void HandleDataResponse(const muduo::net::TcpConnectionPtr &conn,
                           ProxyMessagePtr response);
   void HandleCloseResponse(MessagePtr message, uint64_t conn_key);
+  void EntryPauseSend(MessagePtr, uint64_t conn_id);
+  void EntryResumeSend(MessagePtr, uint64_t conn_id);
+  void HandlePauseSendRequest(const muduo::net::TcpConnectionPtr,
+                              ProxyMessagePtr request_head, MessagePtr message);
+  void HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
+                               ProxyMessagePtr request_head,
+                               MessagePtr message);
 
  private:
   std::shared_ptr<ProxyClient> this_ptr() { return shared_from_this(); }
   void StartProxyService();
   uint32_t GetSourceEntity() { return ++source_entity_; }
   void RemoveConnection(uint64_t conn_key);
+  void StopClientRead(uint64_t conn_id = 0);
+  void ResumeClientRead(uint64_t conn_id = 0);
+  void OnHighWaterMark(bool is_proxy_conn, const muduo::net::TcpConnectionPtr &,
+                       size_t);
+  void OnWriteComplete(bool is_proxy_conn,
+                       const muduo::net::TcpConnectionPtr &);
   std::unique_ptr<MessageDispatch> dispatcher_;
   uint32_t source_entity_;
   muduo::net::InetAddress server_address_;

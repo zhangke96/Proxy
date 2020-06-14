@@ -5,6 +5,8 @@
 #include <random>
 #include "common/message.pb.h"
 
+#define MB_SIZE 1024 * 1024
+
 void MakeResponse(const proto::Message *req_msg,
                   proto::MessageType message_type, proto::Message *resp_msg);
 

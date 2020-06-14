@@ -6,13 +6,14 @@
 #include <muduo/net/Callbacks.h>
 #include <muduo/net/EventLoop.h>
 #include <muduo/net/TcpConnection.h>
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "common/message_dispatch.h"
 #include "TcpServer.h"
+#include "common/message_dispatch.h"
 
 struct Connection {
   explicit Connection(muduo::net::TcpConnectionPtr conn)
@@ -48,6 +49,8 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   void EntryData(const muduo::net::TcpConnectionPtr &conn, ProxyMessagePtr,
                  const muduo::net::TcpConnectionPtr &client_conn);
   void EntryCloseConnection(MessagePtr, uint64_t conn_id);
+  void EntryPauseSend(MessagePtr, uint64_t conn_id);
+  void EntryResumeSend(MessagePtr, uint64_t conn_id);
   uint64_t GetConnId();
   uint32_t GetSourceEntity();
   std::shared_ptr<ProxyInstance> this_ptr() { return shared_from_this(); }
@@ -59,8 +62,19 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
                          ProxyMessagePtr message);
   void HandleCloseConnRequest(const muduo::net::TcpConnectionPtr,
                               ProxyMessagePtr request_head, MessagePtr message);
+  void HandlePauseSendRequest(const muduo::net::TcpConnectionPtr,
+                              ProxyMessagePtr request_head, MessagePtr message);
+  void HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
+                               ProxyMessagePtr request_head,
+                               MessagePtr message);
   void StartListen();
   void RemoveConnecion(uint64_t conn_id);
+  void StopClientRead(uint64_t conn_id = 0);
+  void ResumeClientRead(uint64_t conn_id = 0);
+  void OnHighWaterMark(bool is_proxy_conn, const muduo::net::TcpConnectionPtr &,
+                       size_t);
+  void OnWriteComplete(bool is_proxy_conn,
+                       const muduo::net::TcpConnectionPtr &);
   muduo::net::EventLoop *loop_;
   MessageDispatch dispatcher_;
   muduo::net::TcpConnectionPtr proxy_conn_;
