@@ -58,6 +58,16 @@ void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &) {
       std::bind(&ProxyClient::OnCloseConnection, this_ptr(),
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
+  dispatcher_->RegisterPbHandle(
+      proto::PAUSE_SEND_REQUEST,
+      std::bind(&ProxyClient::HandlePauseSendRequest, this_ptr(),
+                std::placeholders::_1, std::placeholders::_2,
+                std::placeholders::_3));
+  dispatcher_->RegisterPbHandle(
+      proto::RESUME_SEND_REQUEST,
+      std::bind(&ProxyClient::HandleResumeSendRequest, this_ptr(),
+                std::placeholders::_1, std::placeholders::_2,
+                std::placeholders::_3));
   dispatcher_->RegisterMsgHandle(
       DATA_REQUEST, std::bind(&ProxyClient::OnNewData, this_ptr(),
                               std::placeholders::_1, std::placeholders::_2));

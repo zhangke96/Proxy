@@ -353,7 +353,7 @@ void ProxyInstance::HandlePauseSendRequest(const muduo::net::TcpConnectionPtr,
                pause_send_response.get());
   proto::PauseSendResponse *response_body =
       pause_send_response->mutable_body()->mutable_pause_send_response();
-  StopClientRead(conn_key);
+  StopClientRead(conn_key, true);
   response_body->mutable_rc()->set_retcode(0);
   dispatcher_.SendPbResponse(proxy_conn_, request_head, pause_send_response);
 }
@@ -371,12 +371,12 @@ void ProxyInstance::HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
                resume_send_response.get());
   proto::ResumeSendResponse *response_body =
       resume_send_response->mutable_body()->mutable_resume_send_response();
-  ResumeClientRead(conn_key);
+  ResumeClientRead(conn_key, true);
   response_body->mutable_rc()->set_retcode(0);
   dispatcher_.SendPbResponse(proxy_conn_, request_head, resume_send_response);
 }
 
-void ProxyInstance::StopClientRead(uint64_t conn_id) {
+void ProxyInstance::StopClientRead(uint64_t conn_id, bool server_block) {
   if (conn_id) {
     auto index = conn_map_.find(conn_id);
     if (index == conn_map_.end()) {
@@ -384,6 +384,9 @@ void ProxyInstance::StopClientRead(uint64_t conn_id) {
                << " read failed, not found connection";
     } else {
       (index->second).conn->stopRead();
+      if (server_block) {
+        (index->second).server_block = true;
+      }
       LOG_INFO << "stop conn_id:" << conn_id << " read succ";
     }
     return;
@@ -395,15 +398,20 @@ void ProxyInstance::StopClientRead(uint64_t conn_id) {
   }
 }
 
-void ProxyInstance::ResumeClientRead(uint64_t conn_id) {
+void ProxyInstance::ResumeClientRead(uint64_t conn_id, bool server_block) {
   if (conn_id) {
     auto index = conn_map_.find(conn_id);
     if (index == conn_map_.end()) {
       LOG_WARN << "resume conn_id:" << conn_id
                << " read failed, not found connection";
     } else {
-      (index->second).conn->startRead();
-      LOG_INFO << "resume conn_id:" << conn_id << " read succ";
+      if ((index->second).server_block && !server_block) {
+        LOG_INFO << "not resume conn_id:" << conn_id << " read, server block";
+      } else {
+        (index->second).conn->startRead();
+        (index->second).server_block = false;
+        LOG_INFO << "resume conn_id:" << conn_id << " read succ";
+      }
     }
     return;
   } else {

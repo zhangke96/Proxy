@@ -20,13 +20,15 @@ struct Connection {
       : conn(conn),
         server_close(false),
         client_close(false),
-        proxy_accept(false) {}
+        proxy_accept(false),
+        server_block(false) {}
   Connection() = default;
   Connection(const Connection &) = default;
   muduo::net::TcpConnectionPtr conn;
   bool server_close;
   bool client_close;
   bool proxy_accept;
+  bool server_block;  // 标识真实server对应的连接是否block
   std::vector<std::string> pending_message;
 };
 
@@ -69,8 +71,8 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
                                MessagePtr message);
   void StartListen();
   void RemoveConnecion(uint64_t conn_id);
-  void StopClientRead(uint64_t conn_id = 0);
-  void ResumeClientRead(uint64_t conn_id = 0);
+  void StopClientRead(uint64_t conn_id = 0, bool server_block = false);
+  void ResumeClientRead(uint64_t conn_id = 0, bool sever_block = false);
   void OnHighWaterMark(bool is_proxy_conn, const muduo::net::TcpConnectionPtr &,
                        size_t);
   void OnWriteComplete(bool is_proxy_conn,
