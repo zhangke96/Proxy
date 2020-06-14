@@ -123,6 +123,7 @@ void ProxyClient::OnNewConnection(const muduo::net::TcpConnectionPtr &conn,
   proxy_connection.client_open = true;
   proxy_connection.server_open = false;
   proxy_connection.connect_request = message;
+  proxy_connection.client_block = false;
   assert(clients_.find(conn_key) == clients_.end());
   clients_[conn_key] = std::move(proxy_connection);
 }
@@ -298,7 +299,7 @@ void ProxyClient::HandlePauseSendRequest(const muduo::net::TcpConnectionPtr,
                pause_send_response.get());
   proto::PauseSendResponse *response_body =
       pause_send_response->mutable_body()->mutable_pause_send_response();
-  StopClientRead(conn_key);
+  StopClientRead(conn_key, true);
   response_body->mutable_rc()->set_retcode(0);
   dispatcher_->SendPbResponse(proxy_client_->connection(), request_head,
                               pause_send_response);
@@ -317,13 +318,13 @@ void ProxyClient::HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
                resume_send_response.get());
   proto::ResumeSendResponse *response_body =
       resume_send_response->mutable_body()->mutable_resume_send_response();
-  ResumeClientRead(conn_key);
+  ResumeClientRead(conn_key, true);
   response_body->mutable_rc()->set_retcode(0);
   dispatcher_->SendPbResponse(proxy_client_->connection(), request_head,
                               resume_send_response);
 }
 
-void ProxyClient::StopClientRead(uint64_t conn_id) {
+void ProxyClient::StopClientRead(uint64_t conn_id, bool client_block) {
   if (conn_id) {
     auto index = clients_.find(conn_id);
     if (index == clients_.end()) {
@@ -331,6 +332,10 @@ void ProxyClient::StopClientRead(uint64_t conn_id) {
                << " read failed, not found connection";
     } else {
       (index->second).client_conn->Connection()->stopRead();
+      if (client_block) {
+        // 标识client链接阻塞
+        (index->second).client_block = true;
+      }
       LOG_INFO << "stop conn_id:" << conn_id << " read succ";
     }
     return;
@@ -342,15 +347,20 @@ void ProxyClient::StopClientRead(uint64_t conn_id) {
   }
 }
 
-void ProxyClient::ResumeClientRead(uint64_t conn_id) {
+void ProxyClient::ResumeClientRead(uint64_t conn_id, bool client_block) {
   if (conn_id) {
     auto index = clients_.find(conn_id);
     if (index == clients_.end()) {
       LOG_WARN << "resume conn_id:" << conn_id
                << " read failed, not found connection";
     } else {
-      (index->second).client_conn->Connection()->stopRead();
-      LOG_INFO << "resume conn_id:" << conn_id << " read succ";
+      if ((index->second).client_block && !client_block) {
+        LOG_INFO << "not resume conn_id:" << conn_id << " read, client block";
+      } else {
+        (index->second).client_conn->Connection()->startRead();
+        (index->second).client_block = false;
+        LOG_INFO << "resume conn_id:" << conn_id << " read succ";
+      }
     }
     return;
   } else {

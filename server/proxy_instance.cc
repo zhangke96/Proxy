@@ -402,7 +402,7 @@ void ProxyInstance::ResumeClientRead(uint64_t conn_id) {
       LOG_WARN << "resume conn_id:" << conn_id
                << " read failed, not found connection";
     } else {
-      (index->second).conn->stopRead();
+      (index->second).conn->startRead();
       LOG_INFO << "resume conn_id:" << conn_id << " read succ";
     }
     return;
@@ -418,6 +418,7 @@ void ProxyInstance::OnHighWaterMark(bool is_proxy_conn,
                                     const muduo::net::TcpConnectionPtr &conn,
                                     size_t) {
   if (is_proxy_conn) {
+    LOG_INFO << "proxy connection high water";
     if (proxy_conn_->outputBuffer()->readableBytes() > 0) {
       StopClientRead();
       proxy_conn_->setWriteCompleteCallback(std::bind(
@@ -426,6 +427,7 @@ void ProxyInstance::OnHighWaterMark(bool is_proxy_conn,
   } else {
     // 客户端接收速度慢,通知proxy client
     uint64_t conn_id = boost::any_cast<uint64_t>(conn->getContext());
+    LOG_INFO << "client conn_id:" << conn_id << " high water";
     MessagePtr message = std::make_shared<proto::Message>();
     MakeMessage(message.get(), proto::PAUSE_SEND_REQUEST, GetSourceEntity());
     proto::PauseSendRequest *pause_send_request =
@@ -444,11 +446,13 @@ void ProxyInstance::OnHighWaterMark(bool is_proxy_conn,
 void ProxyInstance::OnWriteComplete(bool is_proxy_conn,
                                     const muduo::net::TcpConnectionPtr &conn) {
   if (is_proxy_conn) {
+    LOG_INFO << "proxy connection write complete";
     ResumeClientRead();
     proxy_conn_->setWriteCompleteCallback(muduo::net::WriteCompleteCallback());
   } else {
     // 通知proxy client可以继续发送
     uint64_t conn_id = boost::any_cast<uint64_t>(conn->getContext());
+    LOG_INFO << "client conn_id:" << conn_id << " write complete";
     MessagePtr message = std::make_shared<proto::Message>();
     MakeMessage(message.get(), proto::RESUME_SEND_REQUEST, GetSourceEntity());
     proto::ResumeSendRequest *resume_send_request =

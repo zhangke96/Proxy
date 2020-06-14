@@ -31,6 +31,7 @@ struct ProxyConnection {
   bool server_open;
   MessagePtr connect_request;
   std::vector<std::string> pending_data;
+  bool client_block;
 };
 
 class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
@@ -81,8 +82,8 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
   void StartProxyService();
   uint32_t GetSourceEntity() { return ++source_entity_; }
   void RemoveConnection(uint64_t conn_key);
-  void StopClientRead(uint64_t conn_id = 0);
-  void ResumeClientRead(uint64_t conn_id = 0);
+  void StopClientRead(uint64_t conn_id = 0, bool client_block = false);
+  void ResumeClientRead(uint64_t conn_id = 0, bool client_block = false);
   void OnHighWaterMark(bool is_proxy_conn, const muduo::net::TcpConnectionPtr &,
                        size_t);
   void OnWriteComplete(bool is_proxy_conn,
