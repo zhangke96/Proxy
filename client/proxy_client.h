@@ -36,14 +36,15 @@ struct ProxyConnection {
 
 class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
  public:
-  ProxyClient(const muduo::net::InetAddress &server_address,
+  ProxyClient(muduo::net::EventLoop *loop,
+              const muduo::net::InetAddress &server_address,
               const muduo::net::InetAddress &local_address,
               uint16_t listen_port)
-      : source_entity_(0),
+      : loop_(loop),
+        source_entity_(0),
         server_address_(server_address),
         local_address_(local_address),
         listen_port_(listen_port),
-        loop_(nullptr),
         start_finish_(false),
         start_retcode_(0),
         cond_(mutex_),
@@ -88,13 +89,12 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
                        size_t);
   void OnWriteComplete(bool is_proxy_conn,
                        const muduo::net::TcpConnectionPtr &);
+  muduo::net::EventLoop *loop_;
   std::unique_ptr<MessageDispatch> dispatcher_;
   uint32_t source_entity_;
   muduo::net::InetAddress server_address_;
   muduo::net::InetAddress local_address_;
   uint16_t listen_port_;
-  muduo::net::EventLoop *loop_;
-  std::unique_ptr<muduo::net::EventLoopThread> event_loop_thread_;
   bool start_finish_;
   int start_retcode_;
   muduo::MutexLock mutex_;
