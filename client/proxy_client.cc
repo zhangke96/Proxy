@@ -12,8 +12,6 @@
 
 int ProxyClient::Start() {
   muduo::Logger::setLogLevel(muduo::Logger::DEBUG);
-  event_loop_thread_.reset(new muduo::net::EventLoopThread);
-  loop_ = event_loop_thread_->startLoop();
   dispatcher_.reset(new MessageDispatch(loop_));
   dispatcher_->Init();
   StartProxyService();
