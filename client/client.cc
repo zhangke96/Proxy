@@ -87,5 +87,6 @@ int main(int argc, char *argv[]) {
   std::shared_ptr<ProxyClient> proxy_client(std::make_shared<ProxyClient>(
       loop, proxy_server_address, server_address, transfer_port));
   proxy_client->Start();
-  loop->loop();
+  muduo::net::EventLoop main_loop;
+  main_loop.loop();
 }
