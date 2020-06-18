@@ -11,12 +11,4 @@
     * #### server
        `./proxy_server`，如果需要修改监听ip和端口需要修改文件`server.cc`
     * #### client
-       执行需要代理的程序之前需要设置几个环境变量
-        ```sh
-        LD_PRELOAD=~/code/proxy/build/client/libproxy_client.so  // 动态库路径
-        PROXY_SERVER_ADDR=127.0.0.1                              // Proxy Server的ip地址
-        PROXY_SERVER_PORT=62580                                  // Proxy Server的监听端口
-        PROXY_LISTEN_PORT=8010                                   // 代理到Proxy Server所在机器的监听端口
-        ````
-4. ### 局限
-    因为client需要使用动态库hook系统调用，所以多进程的程序可能无法正常工作，如果在调用了listen之后再调用fork，client端的处理代码都没了。
+       `./proxy_client -s server_ip -p server_port -t transform_port -S proxy_server_ip -P proxy_server_port`
