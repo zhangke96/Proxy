@@ -6,7 +6,7 @@
     为了兼容现有的服务端程序，不修改代码，不重新编译，因此需要hook系统调用，比如listen，close
 3. ### 如何使用
     * #### 编译
-       依赖muduo，因为这里需要编译出动态库，需要修改muduo的cmake，添加编译选项-fPIC。  
+       依赖muduo。 
        `./do_cmake.sh && cd build && make`
     * #### server
        `./proxy_server`，如果需要修改监听ip和端口需要修改文件`server.cc`
