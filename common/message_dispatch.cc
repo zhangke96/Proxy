@@ -241,6 +241,8 @@ void MessageDispatch::SendPbResponse(const muduo::net::TcpConnectionPtr &conn,
     LOG_ERROR << "serialize message failed";
     return;
   }
+  LOG_DEBUG << "pb response to:" << conn->peerAddress().toIpPort() << "\n"
+            << message->DebugString();
   PbResponseBody response_body;
   response_body.length = message_str.length();
   response_body.data = std::move(message_str);

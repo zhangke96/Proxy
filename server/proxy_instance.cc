@@ -99,6 +99,9 @@ void ProxyInstance::HandleListenRequest(const muduo::net::TcpConnectionPtr,
 
 void ProxyInstance::StartListen() {
   loop_->assertInLoopThread();
+  LOG_INFO << "proxy listen client_addr:"
+           << proxy_conn_->peerAddress().toIpPort()
+           << " listen_addr:" << listen_addr_.toIpPort();
   acceptor_.reset(new muduo::net::Acceptor(loop_, listen_addr_, true));
   acceptor_->setNewConnectionCallback(std::bind(&ProxyInstance::OnNewConnection,
                                                 this, std::placeholders::_1,
@@ -112,6 +115,7 @@ void ProxyInstance::StartListen() {
 void ProxyInstance::OnNewConnection(int sockfd,
                                     const muduo::net::InetAddress &peer_addr) {
   loop_->assertInLoopThread();
+  LOG_INFO << "recv client conn, peer addr:" << peer_addr.toIpPort();
   muduo::net::EventLoop *io_loop = thread_pool_->getNextLoop();
   char conn_name[64];
   snprintf(conn_name, sizeof(conn_name), "%s--%s",
@@ -228,6 +232,8 @@ void ProxyInstance::OnClientClose(const muduo::net::TcpConnectionPtr &conn) {
     uint64_t conn_id = boost::any_cast<uint64_t>(conn->getContext());
     assert(conn_id);
     assert(conn_map_.count(conn_id));
+    LOG_INFO << "client conn close, conn_id:" << conn_id
+             << " peer_address:" << conn->peerAddress().toIpPort();
     if (!proxy_client_connect_) {
       // 直接删除
       RemoveConnecion(conn_id);

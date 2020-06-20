@@ -113,6 +113,9 @@ void ProxyClient::OnNewConnection(const muduo::net::TcpConnectionPtr &conn,
   muduo::net::InetAddress remote_address(new_connection_request.ip_v4(),
                                          new_connection_request.port());
   uint64_t conn_key = new_connection_request.conn_key();
+  LOG_INFO << "proxy connect, conn_key:" << conn_key
+           << " origin client addr:" << remote_address.toIpPort()
+           << ", connect to:" << local_address_.toIpPort();
   std::unique_ptr<TcpClient> tcp_client(new TcpClient(loop_, local_address_));
   tcp_client->SetConnectionCallback(std::bind(&ProxyClient::OnClientConnection,
                                               this_ptr(), std::placeholders::_1,
@@ -144,6 +147,8 @@ void ProxyClient::OnClientConnection(const muduo::net::TcpConnectionPtr &conn,
   if (clients_.find(conn_key) == clients_.end()) {
     return;
   }
+  LOG_INFO << "conn to server succ, conn_key:" << conn_key
+           << " proxy conn addr:" << conn->localAddress().toIpPort();
   ProxyConnection &proxy_connection = clients_[conn_key];
   if (proxy_connection.state == ProxyConnState::CONNECTING) {
     proxy_connection.client_conn->Connection()->setContext(conn_key);
@@ -177,7 +182,6 @@ void ProxyClient::OnClientConnection(const muduo::net::TcpConnectionPtr &conn,
 void ProxyClient::OnClientMessage(const muduo::net::TcpConnectionPtr &conn,
                                   muduo::net::Buffer *buffer,
                                   muduo::Timestamp) {
-  LOG_TRACE << "receive from server";
   uint64_t conn_key = boost::any_cast<uint64_t>(conn->getContext());
   DataRequestBody data_request;
   data_request.length = buffer->readableBytes();
@@ -188,6 +192,8 @@ void ProxyClient::OnClientMessage(const muduo::net::TcpConnectionPtr &conn,
   request_head.message_type = DATA_REQUEST;
   request_head.length = data_request.Size();
   request_head.body = &data_request;
+  LOG_TRACE << "receive from server, conn_key:" << conn_key
+            << " data_length:" << data_request.data.size();
   dispatcher_->SendRequest(
       proxy_client_->connection(), &request_head,
       std::bind(&ProxyClient::HandleDataResponse, this_ptr(),
@@ -206,6 +212,8 @@ void ProxyClient::OnNewData(const muduo::net::TcpConnectionPtr &conn,
   uint64_t conn_key = request->conn_key;
   DataResponseBody response_body;
   if (clients_.find(conn_key) != clients_.end()) {
+    LOG_TRACE << "receive from client, conn_key:" << conn_key
+              << " data_length:" << request->data.size();
     auto &client_connection = clients_[conn_key];
     if (client_connection.state == ProxyConnState::CONNECTING) {
       client_connection.pending_data.push_back(request->data);
@@ -234,6 +242,7 @@ void ProxyClient::OnCloseConnection(const muduo::net::TcpConnectionPtr &conn,
   const proto::CloseConnectionRequest &close_connection_request =
       message->body().close_connection_request();
   uint64_t conn_key = close_connection_request.conn_key();
+  LOG_INFO << "client close conn, conn_key:" << conn_key;
   MessagePtr response = std::make_shared<proto::Message>();
   MakeResponse(message.get(), proto::CLOSE_CONNECTION_RESONSE, response.get());
   proto::CloseConnectionResponse *close_connection_response =
@@ -256,7 +265,7 @@ void ProxyClient::OnCloseConnection(const muduo::net::TcpConnectionPtr &conn,
 
 void ProxyClient::OnClientClose(const muduo::net::TcpConnectionPtr &,
                                 uint64_t conn_key) {
-  LOG_DEBUG << "server shutdown write";
+  LOG_INFO << "server shutdown write, conn_key:" << conn_key;
   assert(clients_.find(conn_key) != clients_.end());
   // ProxyConnection &proxy_connection = clients_[conn_key];
   // proxy_connection.server_open = false;
