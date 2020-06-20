@@ -27,8 +27,8 @@ void ProxyServer::OnConnection(const muduo::net::TcpConnectionPtr &conn) {
     proxy_instance->Init();
   } else {
     LOG_INFO << "connection close:" << conn->peerAddress().toIpPort();
-    proxy_instances_[conn.get()]->Stop();
-    proxy_instances_.erase(conn.get());
+    proxy_instances_[conn.get()]->Stop(
+        std::bind(&ProxyServer::OnProxyInstanceStop, this, conn.get()));
   }
 }
 
@@ -37,4 +37,9 @@ void ProxyServer::OnMessage(const muduo::net::TcpConnectionPtr &conn,
   auto index = proxy_instances_.find(conn.get());
   assert(index != proxy_instances_.end());
   (index->second)->OnMessage(conn, buf, time);
+}
+
+void ProxyServer::OnProxyInstanceStop(muduo::net::TcpConnection *conn) {
+  LOG_INFO << "proxy server stop finish " << conn->peerAddress().toIpPort();
+  proxy_instances_.erase(conn);
 }

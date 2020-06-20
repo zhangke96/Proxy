@@ -20,6 +20,7 @@ class ProxyServer {
   void OnConnection(const muduo::net::TcpConnectionPtr &conn);
   void OnMessage(const muduo::net::TcpConnectionPtr &conn,
                  muduo::net::Buffer *buf, muduo::Timestamp);
+  void OnProxyInstanceStop(muduo::net::TcpConnection *);
 
  private:
   muduo::net::EventLoop *loop_;

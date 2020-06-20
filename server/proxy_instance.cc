@@ -18,7 +18,8 @@ ProxyInstance::ProxyInstance(muduo::net::EventLoop *loop,
       dispatcher_(loop_),
       proxy_conn_(conn),
       conn_id_(0),
-      source_entity_(0) {}
+      source_entity_(0),
+      proxy_client_connect_(true) {}
 
 ProxyInstance::~ProxyInstance() { loop_->cancel(check_listen_timer_); }
 
@@ -56,10 +57,16 @@ void ProxyInstance::Init() {
       10.0, std::bind(&ProxyInstance::CheckListen, shared_from_this()));
 }
 
-void ProxyInstance::Stop() {
+void ProxyInstance::Stop(StopCb cb) {
+  // 停止accept新连接
+  // 等到所有连接都close
+  stop_cb_ = cb;
+  proxy_client_connect_ = false;
+  acceptor_.reset();
   for (auto &conn : conn_map_) {
     conn.second.conn->forceClose();
   }
+  CheckStop();
 }
 
 void ProxyInstance::HandleListenRequest(const muduo::net::TcpConnectionPtr,
@@ -135,13 +142,18 @@ void ProxyInstance::OnClientConnection(
       assert(conn->getContext().empty());
       uint64_t conn_id = GetConnId();
       conn->setContext(conn_id);
+      conn_map_.insert(std::make_pair(conn_id, Connection(conn)));
+      if (!proxy_client_connect_) {
+        LOG_WARN << "proxy disconnect, OnclientConnection, give up";
+        conn->forceClose();
+        return;
+      }
       MessagePtr message = std::make_shared<proto::Message>();
       MakeMessage(message.get(), proto::NEW_CONNECTION_REQUEST,
                   GetSourceEntity());
       proto::NewConnectionRequest *new_connection_request =
           message->mutable_body()->mutable_new_connection_request();
       new_connection_request->set_conn_key(conn_id);
-      conn_map_.insert(std::make_pair(conn_id, Connection(conn)));
       muduo::net::InetAddress peer_address = conn->peerAddress();
       if (peer_address.family() == AF_INET) {
         const struct sockaddr_in *address =
@@ -176,6 +188,10 @@ void ProxyInstance::OnClientMessage(const muduo::net::TcpConnectionPtr &conn,
                                     muduo::net::Buffer *buffer,
                                     muduo::Timestamp) {
   loop_->runInLoop([=] {
+    if (!proxy_client_connect_) {
+      LOG_WARN << "proxy disconnect, OnClientMessage, give up";
+      return;
+    }
     uint64_t conn_id = boost::any_cast<uint64_t>(conn->getContext());
     assert(conn_id);
     assert(conn_map_.count(conn_id));
@@ -212,6 +228,12 @@ void ProxyInstance::OnClientClose(const muduo::net::TcpConnectionPtr &conn) {
     uint64_t conn_id = boost::any_cast<uint64_t>(conn->getContext());
     assert(conn_id);
     assert(conn_map_.count(conn_id));
+    if (!proxy_client_connect_) {
+      // 直接删除
+      RemoveConnecion(conn_id);
+      CheckStop();
+      return;
+    }
     Connection &client_conn = conn_map_[conn_id];
     assert(client_conn.client_close == false);
     MessagePtr message = std::make_shared<proto::Message>();
@@ -495,5 +517,14 @@ void ProxyInstance::CheckListen() {
     LOG_WARN << "not listen request, peer_address:"
              << proxy_conn_->peerAddress().toIpPort();
     proxy_conn_->forceClose();
+  }
+}
+
+void ProxyInstance::CheckStop() {
+  if (conn_map_.empty()) {
+    LOG_INFO << "ProxyInstance can stop now";
+    if (stop_cb_) {
+      stop_cb_();
+    }
   }
 }
