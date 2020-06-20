@@ -20,6 +20,8 @@ ProxyInstance::ProxyInstance(muduo::net::EventLoop *loop,
       conn_id_(0),
       source_entity_(0) {}
 
+ProxyInstance::~ProxyInstance() { loop_->cancel(check_listen_timer_); }
+
 void ProxyInstance::Init() {
   dispatcher_.Init();
   dispatcher_.RegisterPbHandle(
@@ -49,6 +51,15 @@ void ProxyInstance::Init() {
       std::bind(&ProxyInstance::OnHighWaterMark, this, true,
                 std::placeholders::_1, std::placeholders::_2),
       10 * MB_SIZE);
+  // 启动定时器,10s之内没有链接就断开
+  check_listen_timer_ = loop_->runAfter(
+      10.0, std::bind(&ProxyInstance::CheckListen, shared_from_this()));
+}
+
+void ProxyInstance::Stop() {
+  for (auto &conn : conn_map_) {
+    conn.second.conn->forceClose();
+  }
 }
 
 void ProxyInstance::HandleListenRequest(const muduo::net::TcpConnectionPtr,
@@ -478,3 +489,11 @@ void ProxyInstance::OnWriteComplete(bool is_proxy_conn,
 void ProxyInstance::EntryPauseSend(MessagePtr, uint64_t conn_id) {}
 
 void ProxyInstance::EntryResumeSend(MessagePtr, uint64_t conn_id) {}
+
+void ProxyInstance::CheckListen() {
+  if (!acceptor_) {
+    LOG_WARN << "not listen request, peer_address:"
+             << proxy_conn_->peerAddress().toIpPort();
+    proxy_conn_->forceClose();
+  }
+}

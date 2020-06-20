@@ -1,7 +1,9 @@
 // Copyright [2020] zhangke
 
 #include "common/message_dispatch.h"
+
 #include <muduo/base/Logging.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -36,10 +38,11 @@ void MessageDispatch::CheckTimeout() {
         continue;
       } else {
         --(request_context.retry_count);
-        LOG_DEBUG << "retry request_id: " << index->first << " send to:"
+        LOG_INFO << "retry request_id: " << index->first << " send to:"
                   << (index->second).conn->peerAddress().toIpPort();
-        (index->second).conn->send(request_context.request.c_str(),
-                                   request_context.request.length());
+        (index->second)
+            .conn->send(request_context.request.c_str(),
+                        request_context.request.length());
       }
     }
     ++index;
@@ -78,9 +81,17 @@ void MessageDispatch::OnMessage(const muduo::net::TcpConnectionPtr &conn,
         LOG_ERROR << "message resp not found, request_id:"
                   << message_head_ptr->request_id << " maybe timeout";
       } else {
-        LOG_DEBUG << "response from:" << conn->peerAddress().toIpPort()
+        LOG_TRACE << "response from:" << conn->peerAddress().toIpPort()
                   << " request_id:" << message_head_ptr->request_id;
         (index->second).response_cb(conn, message_head_ptr);
+        double used_time_ms =
+            muduo::timeDifference(muduo::Timestamp::now(),
+                                  (index->second).send_timestamp) *
+            1000;
+        LOG_TRACE << "message_type:" << message_head_ptr->message_type
+                  << " request length:" << (index->second).request.size()
+                  << " response length:" << message_head_ptr->Size()
+                  << " used time(ms):" << used_time_ms;
         response_handles_.erase(index);
       }
     } else {
@@ -183,7 +194,7 @@ void MessageDispatch::SendPbRequest(const muduo::net::TcpConnectionPtr &conn,
   request_head.length = request_body.Size();
   request_head.request_id = GetRequestId();
   request_head.body = &request_body;
-  LOG_DEBUG << "pb response to:" << conn->peerAddress().toIpPort() << "\n"
+  LOG_DEBUG << "pb request to:" << conn->peerAddress().toIpPort() << "\n"
             << message->DebugString();
   SendRequest(
       conn, &request_head,
@@ -205,9 +216,10 @@ void MessageDispatch::SendRequest(const muduo::net::TcpConnectionPtr &conn,
   request_context.timeout_count = timeout * 100;
   request_context.retry_count = retry_count;
   request_context.request = message->ToString();
+  request_context.send_timestamp = muduo::Timestamp::now();
   request_context.response_cb = std::move(response_cb);
   request_context.timeout_cb = std::move(timeout_cb);
-  LOG_DEBUG << "request_id:" << message->request_id
+  LOG_TRACE << "request_id:" << message->request_id
             << " send to:" << conn->peerAddress().toIpPort();
   conn->send(request_context.request.c_str(), request_context.request.length());
   response_handles_[message->request_id] = std::move(request_context);
@@ -216,7 +228,7 @@ void MessageDispatch::SendRequest(const muduo::net::TcpConnectionPtr &conn,
 void MessageDispatch::SendResponse(const muduo::net::TcpConnectionPtr &conn,
                                    const ProxyMessage *message) {
   std::string message_ptr = message->ToString();
-  LOG_DEBUG << "response to:" << conn->peerAddress().toIpPort();
+  LOG_TRACE << "response to:" << conn->peerAddress().toIpPort();
   conn->send(message_ptr.c_str(), message_ptr.length());
 }
 

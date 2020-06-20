@@ -5,9 +5,11 @@
 #include <muduo/net/Callbacks.h>
 #include <muduo/net/EventLoop.h>
 #include <muduo/net/TcpConnection.h>
+
 #include <map>
 #include <memory>
 #include <string>
+
 #include "common/message.pb.h"
 #include "common/proto.h"
 
@@ -16,7 +18,8 @@ typedef std::function<void(const muduo::net::TcpConnectionPtr &conn,
                            ProxyMessagePtr request_head, MessagePtr message)>
     HandleFunction;
 typedef std::function<void(const muduo::net::TcpConnectionPtr &conn,
-                           ProxyMessagePtr)> MsgHandleFunction;
+                           ProxyMessagePtr)>
+    MsgHandleFunction;
 typedef std::function<void(MessagePtr response)> PbResponseCb;
 typedef std::function<void()> TimeoutCb;
 
@@ -26,6 +29,7 @@ struct RequestContext {
   uint32_t timeout_count;
   uint16_t retry_count;
   std::string request;
+  muduo::Timestamp send_timestamp;
   MsgHandleFunction response_cb;
   TimeoutCb timeout_cb;
 };

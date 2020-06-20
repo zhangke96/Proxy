@@ -2,6 +2,8 @@
 
 #include "server/proxy_server.h"
 
+#include <muduo/base/Logging.h>
+
 ProxyServer::ProxyServer(muduo::net::EventLoop *loop,
                          const muduo::net::InetAddress &listen_address)
     : loop_(loop), listen_address_(listen_address) {}
@@ -16,11 +18,18 @@ void ProxyServer::Start() {
   server_->start();
 }
 
-void ProxyServer::OnConnection(const muduo::net::TcpConnectionPtr &new_conn) {
-  std::shared_ptr<ProxyInstance> proxy_instance =
-      std::make_shared<ProxyInstance>(new_conn->getLoop(), new_conn);
-  proxy_instances_[new_conn.get()] = proxy_instance;
-  proxy_instance->Init();
+void ProxyServer::OnConnection(const muduo::net::TcpConnectionPtr &conn) {
+  if (proxy_instances_.find(conn.get()) == proxy_instances_.end()) {
+    LOG_INFO << "new connection from:" << conn->peerAddress().toIpPort();
+    std::shared_ptr<ProxyInstance> proxy_instance =
+        std::make_shared<ProxyInstance>(conn->getLoop(), conn);
+    proxy_instances_[conn.get()] = proxy_instance;
+    proxy_instance->Init();
+  } else {
+    LOG_INFO << "connection close:" << conn->peerAddress().toIpPort();
+    proxy_instances_[conn.get()]->Stop();
+    proxy_instances_.erase(conn.get());
+  }
 }
 
 void ProxyServer::OnMessage(const muduo::net::TcpConnectionPtr &conn,

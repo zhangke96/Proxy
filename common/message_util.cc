@@ -1,7 +1,9 @@
 // Copyright [2020] zhangke
 
 #include "common/message_util.h"
+
 #include <stdint.h>
+
 #include <atomic>
 
 void MakeResponse(const proto::Message *req_msg,

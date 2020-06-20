@@ -177,7 +177,7 @@ void ProxyClient::OnClientConnection(const muduo::net::TcpConnectionPtr &conn,
 void ProxyClient::OnClientMessage(const muduo::net::TcpConnectionPtr &conn,
                                   muduo::net::Buffer *buffer,
                                   muduo::Timestamp) {
-  LOG_DEBUG << "receive from server";
+  LOG_TRACE << "receive from server";
   uint64_t conn_key = boost::any_cast<uint64_t>(conn->getContext());
   DataRequestBody data_request;
   data_request.length = buffer->readableBytes();
@@ -258,7 +258,7 @@ void ProxyClient::OnClientClose(const muduo::net::TcpConnectionPtr &,
                                 uint64_t conn_key) {
   LOG_DEBUG << "server shutdown write";
   assert(clients_.find(conn_key) != clients_.end());
-  ProxyConnection &proxy_connection = clients_[conn_key];
+  // ProxyConnection &proxy_connection = clients_[conn_key];
   // proxy_connection.server_open = false;
   MessagePtr request_message = std::make_shared<proto::Message>();
   MakeMessage(request_message.get(), proto::CLOSE_CONNECTION_REQUEST,

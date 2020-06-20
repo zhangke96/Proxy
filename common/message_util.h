@@ -3,6 +3,7 @@
 #define COMMON_MESSAGE_UTIL_H_
 
 #include <random>
+
 #include "common/message.pb.h"
 
 #define MB_SIZE 1024 * 1024

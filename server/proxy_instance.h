@@ -36,7 +36,9 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
  public:
   ProxyInstance(muduo::net::EventLoop *loop,
                 const muduo::net::TcpConnectionPtr &conn);
+  ~ProxyInstance();
   void Init();
+  void Stop();
   void OnMessage(const muduo::net::TcpConnectionPtr &conn,
                  muduo::net::Buffer *buf, muduo::Timestamp time) {
     dispatcher_.OnMessage(conn, buf, time);
@@ -77,9 +79,11 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
                        size_t);
   void OnWriteComplete(bool is_proxy_conn,
                        const muduo::net::TcpConnectionPtr &);
+  void CheckListen();
   muduo::net::EventLoop *loop_;
   MessageDispatch dispatcher_;
   muduo::net::TcpConnectionPtr proxy_conn_;
+  muduo::net::TimerId check_listen_timer_;
   // std::unique_ptr<TcpServer> server_;
 
   MessagePtr listen_response_msg_;
@@ -91,6 +95,7 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   // std::map<uint64_t, std::vector<std::string>> pending_message_;
   std::unique_ptr<muduo::net::Acceptor> acceptor_;
   std::shared_ptr<muduo::net::EventLoopThreadPool> thread_pool_;
+  // muduo::net::TimerId heartbeat_timer_;
 };
 
 #endif  // SERVER_PROXY_INSTANCE_H_
