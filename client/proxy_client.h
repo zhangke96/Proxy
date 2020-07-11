@@ -48,7 +48,8 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
         start_finish_(false),
         start_retcode_(0),
         cond_(mutex_),
-        session_key_(0) {}
+        session_key_(0),
+        first_connect_(true) {}
   int Start();
   void OnMessage(const muduo::net::TcpConnectionPtr &conn,
                  muduo::net::Buffer *buf, muduo::Timestamp time) {
@@ -102,6 +103,7 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
   std::unique_ptr<muduo::net::TcpClient> proxy_client_;
   uint64_t session_key_;
   std::unordered_map<uint64_t, ProxyConnection> clients_;
+  bool first_connect_;
 };
 
 #endif  // CLIENT_PROXY_CLIENT_H_

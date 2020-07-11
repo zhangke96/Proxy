@@ -101,6 +101,7 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   bool proxy_client_connect_;
   // muduo::net::TimerId heartbeat_timer_;
   StopCb stop_cb_;
+  std::vector<muduo::net::TcpConnectionPtr> connections;
 };
 
 #endif  // SERVER_PROXY_INSTANCE_H_

@@ -123,6 +123,7 @@ void ProxyInstance::OnNewConnection(int sockfd,
   muduo::net::InetAddress local_addr(muduo::net::sockets::getLocalAddr(sockfd));
   muduo::net::TcpConnectionPtr conn(std::make_shared<muduo::net::TcpConnection>(
       io_loop, conn_name, sockfd, local_addr, peer_addr));
+  connections.push_back(conn);      
   conn->setConnectionCallback(std::bind(&ProxyInstance::OnClientConnection,
                                         this, std::placeholders::_1));
   conn->setCloseCallback(

@@ -34,55 +34,72 @@ void ProxyClient::StartProxyService() {
     proxy_client_->setMessageCallback(
         std::bind(&ProxyClient::OnMessage, this_ptr(), std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3));
+    proxy_client_->enableRetry();
     proxy_client_->connect();
   });
 }
 
-void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &) {
-  LOG_INFO << "proxy connection established";
-  // 注册高水位回调
-  proxy_client_->connection()->setHighWaterMarkCallback(
-      std::bind(&ProxyClient::OnHighWaterMark, this, true,
-                std::placeholders::_1, std::placeholders::_2),
-      10 * MB_SIZE);
-  // 注册pb handle
-  dispatcher_->RegisterPbHandle(
-      proto::NEW_CONNECTION_REQUEST,
-      std::bind(&ProxyClient::OnNewConnection, this_ptr(),
-                std::placeholders::_1, std::placeholders::_2,
-                std::placeholders::_3));
-  dispatcher_->RegisterPbHandle(
-      proto::CLOSE_CONNECTION_REQUEST,
-      std::bind(&ProxyClient::OnCloseConnection, this_ptr(),
-                std::placeholders::_1, std::placeholders::_2,
-                std::placeholders::_3));
-  dispatcher_->RegisterPbHandle(
-      proto::PAUSE_SEND_REQUEST,
-      std::bind(&ProxyClient::HandlePauseSendRequest, this_ptr(),
-                std::placeholders::_1, std::placeholders::_2,
-                std::placeholders::_3));
-  dispatcher_->RegisterPbHandle(
-      proto::RESUME_SEND_REQUEST,
-      std::bind(&ProxyClient::HandleResumeSendRequest, this_ptr(),
-                std::placeholders::_1, std::placeholders::_2,
-                std::placeholders::_3));
-  dispatcher_->RegisterMsgHandle(
-      DATA_REQUEST, std::bind(&ProxyClient::OnNewData, this_ptr(),
-                              std::placeholders::_1, std::placeholders::_2));
-  // 发送listen request
-  MessagePtr message(std::make_shared<proto::Message>());
-  MakeMessage(message.get(), proto::LISTEN_REQUEST, GetSourceEntity());
-  proto::ListenRequest *listen_request =
-      message->mutable_body()->mutable_listen_request();
-  uint32_t ip =
-      ntohl(((sockaddr_in *)local_address_.getSockAddr())->sin_addr.s_addr);
-  listen_request->set_self_ipv4(ip);
-  listen_request->set_self_port(local_address_.toPort());
-  listen_request->set_listen_port(listen_port_);
-  dispatcher_->SendPbRequest(proxy_client_->connection(), message,
-                             std::bind(&ProxyClient::HandleListenResponse,
-                                       this_ptr(), std::placeholders::_1),
-                             nullptr);
+void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &conn) {
+  if (conn->connected()) {
+    LOG_INFO << "proxy connection established";
+    // 注册高水位回调
+    proxy_client_->connection()->setHighWaterMarkCallback(
+        std::bind(&ProxyClient::OnHighWaterMark, this, true,
+                  std::placeholders::_1, std::placeholders::_2),
+        10 * MB_SIZE);
+    if (first_connect_) {
+      first_connect_ = false;
+      // 注册pb handle
+      dispatcher_->RegisterPbHandle(
+          proto::NEW_CONNECTION_REQUEST,
+          std::bind(&ProxyClient::OnNewConnection, this_ptr(),
+                    std::placeholders::_1, std::placeholders::_2,
+                    std::placeholders::_3));
+      dispatcher_->RegisterPbHandle(
+          proto::CLOSE_CONNECTION_REQUEST,
+          std::bind(&ProxyClient::OnCloseConnection, this_ptr(),
+                    std::placeholders::_1, std::placeholders::_2,
+                    std::placeholders::_3));
+      dispatcher_->RegisterPbHandle(
+          proto::PAUSE_SEND_REQUEST,
+          std::bind(&ProxyClient::HandlePauseSendRequest, this_ptr(),
+                    std::placeholders::_1, std::placeholders::_2,
+                    std::placeholders::_3));
+      dispatcher_->RegisterPbHandle(
+          proto::RESUME_SEND_REQUEST,
+          std::bind(&ProxyClient::HandleResumeSendRequest, this_ptr(),
+                    std::placeholders::_1, std::placeholders::_2,
+                    std::placeholders::_3));
+      dispatcher_->RegisterMsgHandle(
+          DATA_REQUEST, std::bind(&ProxyClient::OnNewData, this_ptr(),
+                                  std::placeholders::_1, std::placeholders::_2));
+    }
+    // 发送listen request
+    // 重新连接之后需要发送
+    MessagePtr message(std::make_shared<proto::Message>());
+    MakeMessage(message.get(), proto::LISTEN_REQUEST, GetSourceEntity());
+    proto::ListenRequest *listen_request =
+        message->mutable_body()->mutable_listen_request();
+    uint32_t ip =
+        ntohl(((sockaddr_in *)local_address_.getSockAddr())->sin_addr.s_addr);
+    listen_request->set_self_ipv4(ip);
+    listen_request->set_self_port(local_address_.toPort());
+    listen_request->set_listen_port(listen_port_);
+    dispatcher_->SendPbRequest(proxy_client_->connection(), message,
+                              std::bind(&ProxyClient::HandleListenResponse,
+                                        this_ptr(), std::placeholders::_1),
+                              nullptr);
+  } else {
+    LOG_WARN << "proxy connection disconnected";
+    std::vector<uint64_t> exist_connections;
+    exist_connections.reserve(clients_.size());
+    for (const auto &connection : clients_) {
+      exist_connections.push_back(connection.first);
+    }
+    for (uint64_t conn_key : exist_connections) {
+      RemoveConnection(conn_key);
+    }
+  }
 }
 
 void ProxyClient::HandleListenResponse(MessagePtr response) {
