@@ -27,8 +27,7 @@ struct ProxyConnection {
   uint64_t conn_key;
   std::unique_ptr<TcpClient> client_conn;
   ProxyConnState state;
-  bool client_open;
-  bool server_open;
+  bool server_open;  // 连接server是否成功
   MessagePtr connect_request;
   std::vector<std::string> pending_data;
   bool client_block;

@@ -148,7 +148,6 @@ void ProxyClient::OnNewConnection(const muduo::net::TcpConnectionPtr &conn,
   proxy_connection.conn_key = conn_key;
   proxy_connection.client_conn = std::move(tcp_client);
   proxy_connection.state = ProxyConnState::CONNECTING;
-  proxy_connection.client_open = true;
   proxy_connection.server_open = false;
   proxy_connection.connect_request = message;
   proxy_connection.client_block = false;
@@ -189,9 +188,6 @@ void ProxyClient::OnClientConnection(const muduo::net::TcpConnectionPtr &conn,
     for (auto &data : proxy_connection.pending_data) {
       proxy_connection.client_conn->Connection()->send(data.c_str(),
                                                        data.size());
-    }
-    if (proxy_connection.client_open == false) {
-      proxy_connection.client_conn->Disconnect();
     }
   }
 }
@@ -265,12 +261,14 @@ void ProxyClient::OnCloseConnection(const muduo::net::TcpConnectionPtr &conn,
   proto::CloseConnectionResponse *close_connection_response =
       response->mutable_body()->mutable_close_connection_response();
   if (clients_.find(conn_key) != clients_.end()) {
+    // 不支持半连接
     auto &client_connection = clients_[conn_key];
-    client_connection.client_open = false;
-    if (client_connection.server_open) {
-      client_connection.client_conn->Disconnect();
-    } else {
+    if (client_connection.server_open == false) {
+      // 到server连接还没建立成功
+      client_connection.client_conn->Stop();
       RemoveConnection(conn_key);
+    } else {
+      client_connection.client_conn->DestroyConn();
     }
     close_connection_response->mutable_rc()->set_retcode(0);
   } else {
@@ -306,17 +304,13 @@ void ProxyClient::HandleCloseResponse(MessagePtr message, uint64_t conn_key) {
   assert(clients_.find(conn_key) != clients_.end());
   ProxyConnection &proxy_connection = clients_[conn_key];
   proxy_connection.server_open = false;
-  if (proxy_connection.client_open == false) {
-    RemoveConnection(conn_key);
-  }
+  RemoveConnection(conn_key);
 }
 
 void ProxyClient::RemoveConnection(uint64_t conn_key) {
   LOG_INFO << "remove connection, conn_key:" << conn_key;
   assert(clients_.count(conn_key));
   ProxyConnection &proxy_connection = clients_[conn_key];
-  assert(proxy_connection.client_open == false &&
-         proxy_connection.server_open == false);
   proxy_connection.client_conn->DestroyConn();
   clients_.erase(conn_key);
 }
