@@ -266,7 +266,9 @@ void ProxyClient::OnCloseConnection(const muduo::net::TcpConnectionPtr &conn,
     if (client_connection.server_open == false) {
       // 到server连接还没建立成功
       client_connection.client_conn->Stop();
-      RemoveConnection(conn_key);
+      // 为了防止TcpClient.Connector析构时channel没有reset
+      // 这里应该获取TcpClient对应的loop
+      loop_->queueInLoop(std::bind(&ProxyClient::RemoveConnection, this, conn_key, false));
     } else {
       client_connection.client_conn->DestroyConn();
     }
@@ -307,12 +309,17 @@ void ProxyClient::HandleCloseResponse(MessagePtr message, uint64_t conn_key) {
   RemoveConnection(conn_key);
 }
 
-void ProxyClient::RemoveConnection(uint64_t conn_key) {
-  LOG_INFO << "remove connection, conn_key:" << conn_key;
-  assert(clients_.count(conn_key));
-  ProxyConnection &proxy_connection = clients_[conn_key];
-  proxy_connection.client_conn->DestroyConn();
-  clients_.erase(conn_key);
+void ProxyClient::RemoveConnection(uint64_t conn_key, bool destroy) {
+  loop_->runInLoop([=]{
+    LOG_INFO << "remove connection, conn_key:" << conn_key;
+    assert(clients_.count(conn_key));
+    // 如果到server连接还没建立成功，不能调用DestroyConn
+    if (destroy) {
+      ProxyConnection &proxy_connection = clients_[conn_key];
+      proxy_connection.client_conn->DestroyConn();
+    }
+    clients_.erase(conn_key);
+  });
 }
 
 void ProxyClient::HandlePauseSendRequest(const muduo::net::TcpConnectionPtr,

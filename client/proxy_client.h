@@ -82,7 +82,7 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
   std::shared_ptr<ProxyClient> this_ptr() { return shared_from_this(); }
   void StartProxyService();
   uint32_t GetSourceEntity() { return ++source_entity_; }
-  void RemoveConnection(uint64_t conn_key);
+  void RemoveConnection(uint64_t conn_key, bool destroy = true);
   void StopClientRead(uint64_t conn_id = 0, bool client_block = false);
   void ResumeClientRead(uint64_t conn_id = 0, bool client_block = false);
   void OnHighWaterMark(bool is_proxy_conn, const muduo::net::TcpConnectionPtr &,
