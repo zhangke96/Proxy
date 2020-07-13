@@ -71,8 +71,9 @@ void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &conn) {
                     std::placeholders::_1, std::placeholders::_2,
                     std::placeholders::_3));
       dispatcher_->RegisterMsgHandle(
-          DATA_REQUEST, std::bind(&ProxyClient::OnNewData, this_ptr(),
-                                  std::placeholders::_1, std::placeholders::_2));
+          DATA_REQUEST,
+          std::bind(&ProxyClient::OnNewData, this_ptr(), std::placeholders::_1,
+                    std::placeholders::_2));
     }
     // 发送listen request
     // 重新连接之后需要发送
@@ -86,9 +87,9 @@ void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &conn) {
     listen_request->set_self_port(local_address_.toPort());
     listen_request->set_listen_port(listen_port_);
     dispatcher_->SendPbRequest(proxy_client_->connection(), message,
-                              std::bind(&ProxyClient::HandleListenResponse,
-                                        this_ptr(), std::placeholders::_1),
-                              nullptr);
+                               std::bind(&ProxyClient::HandleListenResponse,
+                                         this_ptr(), std::placeholders::_1),
+                               nullptr);
   } else {
     LOG_WARN << "proxy connection disconnected";
     std::vector<uint64_t> exist_connections;
@@ -268,7 +269,8 @@ void ProxyClient::OnCloseConnection(const muduo::net::TcpConnectionPtr &conn,
       client_connection.client_conn->Stop();
       // 为了防止TcpClient.Connector析构时channel没有reset
       // 这里应该获取TcpClient对应的loop
-      loop_->queueInLoop(std::bind(&ProxyClient::RemoveConnection, this, conn_key, false));
+      loop_->runAfter(1.0, std::bind(&ProxyClient::RemoveConnection, this,
+                                     conn_key, false));
     } else {
       client_connection.client_conn->DestroyConn();
     }
@@ -310,7 +312,7 @@ void ProxyClient::HandleCloseResponse(MessagePtr message, uint64_t conn_key) {
 }
 
 void ProxyClient::RemoveConnection(uint64_t conn_key, bool destroy) {
-  loop_->runInLoop([=]{
+  loop_->runInLoop([=] {
     LOG_INFO << "remove connection, conn_key:" << conn_key;
     assert(clients_.count(conn_key));
     // 如果到server连接还没建立成功，不能调用DestroyConn
