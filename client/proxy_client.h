@@ -28,6 +28,7 @@ struct ProxyConnection {
   std::unique_ptr<TcpClient> client_conn;
   ProxyConnState state;
   bool server_open;  // 连接server是否成功
+  bool client_open;  // client是否连接
   MessagePtr connect_request;
   std::vector<std::string> pending_data;
   bool client_block;
@@ -82,6 +83,7 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
   std::shared_ptr<ProxyClient> this_ptr() { return shared_from_this(); }
   void StartProxyService();
   uint32_t GetSourceEntity() { return ++source_entity_; }
+  void ClientClose(uint64_t conn_key);
   void RemoveConnection(uint64_t conn_key, bool destroy = true);
   void StopClientRead(uint64_t conn_id = 0, bool client_block = false);
   void ResumeClientRead(uint64_t conn_id = 0, bool client_block = false);
