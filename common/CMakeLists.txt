@@ -5,4 +5,4 @@ set(COMMON_SRC
     proto.cc
 )
 add_library(common STATIC ${COMMON_SRC})
-target_link_libraries(common protobuf)
+target_link_libraries(common libprotobuf.a)
