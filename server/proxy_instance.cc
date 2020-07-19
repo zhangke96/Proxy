@@ -123,7 +123,6 @@ void ProxyInstance::OnNewConnection(int sockfd,
   muduo::net::InetAddress local_addr(muduo::net::sockets::getLocalAddr(sockfd));
   muduo::net::TcpConnectionPtr conn(std::make_shared<muduo::net::TcpConnection>(
       io_loop, conn_name, sockfd, local_addr, peer_addr));
-  connections.push_back(conn);      
   conn->setConnectionCallback(std::bind(&ProxyInstance::OnClientConnection,
                                         this, std::placeholders::_1));
   conn->setCloseCallback(
@@ -241,8 +240,6 @@ void ProxyInstance::OnClientClose(const muduo::net::TcpConnectionPtr &conn) {
       CheckStop();
       return;
     }
-    Connection &client_conn = conn_map_[conn_id];
-    assert(client_conn.client_close == false);
     MessagePtr message = std::make_shared<proto::Message>();
     MakeMessage(message.get(), proto::CLOSE_CONNECTION_REQUEST,
                 GetSourceEntity());
@@ -263,12 +260,10 @@ void ProxyInstance::EntryCloseConnection(MessagePtr message, uint64_t conn_id) {
   // const proto::CloseConnectionResponse &response =
   //     message->body().close_connection_response();
   // 忽略返回码
-  assert(conn_map_.count(conn_id));
-  conn_map_[conn_id].client_close = true;
-  if (conn_map_[conn_id].server_close) {
-    // 如果server也关闭了
-    muduo::net::TcpConnectionPtr conn = conn_map_[conn_id].conn;
+  if (conn_map_.count(conn_id)) {
     RemoveConnecion(conn_id);
+  } else {
+    LOG_WARN << "conn_id:" << conn_id << " already removed";
   }
 }
 
@@ -357,15 +352,7 @@ void ProxyInstance::HandleCloseConnRequest(const muduo::net::TcpConnectionPtr,
   proto::CloseConnectionResponse *response_body =
       close_response->mutable_body()->mutable_close_connection_response();
   if (conn_map_.find(conn_key) != conn_map_.end()) {
-    Connection &conn = conn_map_[conn_key];
-    if (conn.server_close == false) {
-      conn.server_close = true;
-      if (conn.client_close == true) {
-        RemoveConnecion(conn_key);
-      } else {
-        conn.conn->shutdown();
-      }
-    }
+    RemoveConnecion(conn_key);
     response_body->mutable_rc()->set_retcode(0);
   } else {
     response_body->mutable_rc()->set_retcode(-1);
