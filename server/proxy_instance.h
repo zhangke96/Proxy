@@ -17,9 +17,7 @@
 
 struct Connection {
   explicit Connection(muduo::net::TcpConnectionPtr conn)
-      : conn(conn),
-        proxy_accept(false),
-        server_block(false) {}
+      : conn(conn), proxy_accept(false), server_block(false) {}
   Connection() = default;
   Connection(const Connection &) = default;
   muduo::net::TcpConnectionPtr conn;
@@ -39,7 +37,7 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   void Stop(StopCb cb);
   void OnMessage(const muduo::net::TcpConnectionPtr &conn,
                  muduo::net::Buffer *buf, muduo::Timestamp time) {
-    dispatcher_.OnMessage(conn, buf, time);
+    dispatcher_->OnMessage(conn, buf, time);
   }
   void OnNewConnection(int sockfd, const muduo::net::InetAddress &);
   void OnClientConnection(const muduo::net::TcpConnectionPtr &);
@@ -48,11 +46,13 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   void OnClientClose(const muduo::net::TcpConnectionPtr &);
   void EntryAddConnection(MessagePtr message,
                           const muduo::net::TcpConnectionPtr &);
+  void AddConnectionTimeout(const muduo::net::TcpConnectionPtr &);
   void EntryData(const muduo::net::TcpConnectionPtr &conn, ProxyMessagePtr,
                  const muduo::net::TcpConnectionPtr &client_conn);
   void EntryCloseConnection(MessagePtr, uint64_t conn_id);
   void EntryPauseSend(MessagePtr, uint64_t conn_id);
   void EntryResumeSend(MessagePtr, uint64_t conn_id);
+  void EntryHeartBeat(MessagePtr);
   uint64_t GetConnId();
   uint32_t GetSourceEntity();
   std::shared_ptr<ProxyInstance> this_ptr() { return shared_from_this(); }
@@ -79,8 +79,9 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
                        const muduo::net::TcpConnectionPtr &);
   void CheckListen();
   void CheckStop();
+  void SendHeartBeat();
   muduo::net::EventLoop *loop_;
-  MessageDispatch dispatcher_;
+  std::unique_ptr<MessageDispatch> dispatcher_;
   muduo::net::TcpConnectionPtr proxy_conn_;
   muduo::net::TimerId check_listen_timer_;
   // std::unique_ptr<TcpServer> server_;
@@ -95,7 +96,7 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   std::unique_ptr<muduo::net::Acceptor> acceptor_;
   std::shared_ptr<muduo::net::EventLoopThreadPool> thread_pool_;
   bool proxy_client_connect_;
-  // muduo::net::TimerId heartbeat_timer_;
+  muduo::net::TimerId heartbeat_timer_;
   StopCb stop_cb_;
 };
 

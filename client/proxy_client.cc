@@ -77,6 +77,10 @@ void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &conn) {
           std::bind(&ProxyClient::HandleResumeSendRequest, this_ptr(),
                     std::placeholders::_1, std::placeholders::_2,
                     std::placeholders::_3));
+      dispatcher_->RegisterPbHandle(
+          proto::PING, std::bind(&ProxyClient::HandleHeartbeat, this_ptr(),
+                                 std::placeholders::_1, std::placeholders::_2,
+                                 std::placeholders::_3));
       dispatcher_->RegisterMsgHandle(
           DATA_REQUEST,
           std::bind(&ProxyClient::OnNewData, this_ptr(), std::placeholders::_1,
@@ -492,3 +496,15 @@ void ProxyClient::OnWriteComplete(bool is_proxy_conn,
 void ProxyClient::EntryPauseSend(MessagePtr, uint64_t conn_id) {}
 
 void ProxyClient::EntryResumeSend(MessagePtr, uint64_t conn_id) {}
+
+void ProxyClient::HandleHeartbeat(const muduo::net::TcpConnectionPtr,
+                                  ProxyMessagePtr request_head,
+                                  MessagePtr message) {
+  MessagePtr pong_response = std::make_shared<proto::Message>();
+  MakeResponse(message.get(), proto::PONG, pong_response.get());
+  proto::Pong *response_body = pong_response->mutable_body()->mutable_pong();
+  response_body->mutable_rc()->set_retcode(0);
+  response_body->set_time(time(nullptr));
+  dispatcher_->SendPbResponse(proxy_client_->connection(), request_head,
+                              pong_response);
+}

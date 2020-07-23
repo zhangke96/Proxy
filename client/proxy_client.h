@@ -78,6 +78,8 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
   void HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
                                ProxyMessagePtr request_head,
                                MessagePtr message);
+  void HandleHeartbeat(const muduo::net::TcpConnectionPtr,
+                       ProxyMessagePtr request_head, MessagePtr message);
 
  private:
   std::shared_ptr<ProxyClient> this_ptr() { return shared_from_this(); }

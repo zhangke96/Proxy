@@ -15,37 +15,40 @@
 ProxyInstance::ProxyInstance(muduo::net::EventLoop *loop,
                              const muduo::net::TcpConnectionPtr &conn)
     : loop_(loop),
-      dispatcher_(loop_),
+      dispatcher_(new MessageDispatch(loop_)),
       proxy_conn_(conn),
       conn_id_(0),
       source_entity_(0),
       proxy_client_connect_(true) {}
 
-ProxyInstance::~ProxyInstance() { loop_->cancel(check_listen_timer_); }
+ProxyInstance::~ProxyInstance() {
+  loop_->cancel(check_listen_timer_);
+  loop_->cancel(heartbeat_timer_);
+}
 
 void ProxyInstance::Init() {
-  dispatcher_.Init();
-  dispatcher_.RegisterPbHandle(
+  dispatcher_->Init();
+  dispatcher_->RegisterPbHandle(
       proto::LISTEN_REQUEST,
       std::bind(&ProxyInstance::HandleListenRequest, this,
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
-  dispatcher_.RegisterPbHandle(
+  dispatcher_->RegisterPbHandle(
       proto::CLOSE_CONNECTION_REQUEST,
       std::bind(&ProxyInstance::HandleCloseConnRequest, this,
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
-  dispatcher_.RegisterPbHandle(
+  dispatcher_->RegisterPbHandle(
       proto::PAUSE_SEND_REQUEST,
       std::bind(&ProxyInstance::HandlePauseSendRequest, this,
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
-  dispatcher_.RegisterPbHandle(
+  dispatcher_->RegisterPbHandle(
       proto::RESUME_SEND_REQUEST,
       std::bind(&ProxyInstance::HandleResumeSendRequest, this,
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
-  dispatcher_.RegisterMsgHandle(
+  dispatcher_->RegisterMsgHandle(
       DATA_REQUEST, std::bind(&ProxyInstance::HandleDataRequest, this,
                               std::placeholders::_1, std::placeholders::_2));
   proxy_conn_->setHighWaterMarkCallback(
@@ -53,8 +56,8 @@ void ProxyInstance::Init() {
                 std::placeholders::_1, std::placeholders::_2),
       10 * MB_SIZE);
   // 启动定时器,10s之内没有链接就断开
-  check_listen_timer_ = loop_->runAfter(
-      10.0, std::bind(&ProxyInstance::CheckListen, shared_from_this()));
+  check_listen_timer_ =
+      loop_->runAfter(10.0, std::bind(&ProxyInstance::CheckListen, this_ptr()));
 }
 
 void ProxyInstance::Stop(StopCb cb) {
@@ -63,6 +66,7 @@ void ProxyInstance::Stop(StopCb cb) {
   stop_cb_ = cb;
   proxy_client_connect_ = false;
   acceptor_.reset();
+  dispatcher_.reset();
   for (auto &conn : conn_map_) {
     conn.second.conn->forceClose();
   }
@@ -84,7 +88,8 @@ void ProxyInstance::HandleListenRequest(const muduo::net::TcpConnectionPtr,
     // 已经有监听
     response_body->mutable_rc()->set_retcode(-1);
     response_body->mutable_rc()->set_error_message("already listen");
-    dispatcher_.SendPbResponse(proxy_conn_, request_head, listen_response_msg_);
+    dispatcher_->SendPbResponse(proxy_conn_, request_head,
+                                listen_response_msg_);
     return;
   }
   uint16_t listen_port =
@@ -93,7 +98,9 @@ void ProxyInstance::HandleListenRequest(const muduo::net::TcpConnectionPtr,
   StartListen();
   response_body->mutable_rc()->set_retcode(0);
   response_body->mutable_rc()->set_error_message("success");
-  dispatcher_.SendPbResponse(proxy_conn_, request_head, listen_response_msg_);
+  dispatcher_->SendPbResponse(proxy_conn_, request_head, listen_response_msg_);
+  heartbeat_timer_ =
+      loop_->runEvery(10.0, std::bind(&ProxyInstance::SendHeartBeat, this));
   return;
 }
 
@@ -176,11 +183,11 @@ void ProxyInstance::OnClientConnection(
         }
         new_connection_request->set_port(ntohs(address->sin6_port));
       }
-      dispatcher_.SendPbRequest(
+      dispatcher_->SendPbRequest(
           proxy_conn_, message,
           std::bind(&ProxyInstance::EntryAddConnection, this_ptr(),
                     std::placeholders::_1, conn),
-          nullptr);
+          std::bind(&ProxyInstance::AddConnectionTimeout, this_ptr(), conn));
     } else {
       // client shutdown write(recv fin)
       // 主动destroy连接
@@ -210,7 +217,7 @@ void ProxyInstance::OnClientMessage(const muduo::net::TcpConnectionPtr &conn,
       request_head.message_type = DATA_REQUEST;
       request_head.length = data_request.Size();
       request_head.body = &data_request;
-      dispatcher_.SendRequest(
+      dispatcher_->SendRequest(
           proxy_conn_, &request_head,
           std::bind(&ProxyInstance::EntryData, this_ptr(),
                     std::placeholders::_1, std::placeholders::_2, conn),
@@ -246,7 +253,7 @@ void ProxyInstance::OnClientClose(const muduo::net::TcpConnectionPtr &conn) {
     proto::CloseConnectionRequest *close_connection_request =
         message->mutable_body()->mutable_close_connection_request();
     close_connection_request->set_conn_key(conn_id);
-    dispatcher_.SendPbRequest(
+    dispatcher_->SendPbRequest(
         proxy_conn_, message,
         std::bind(&ProxyInstance::EntryCloseConnection, this_ptr(),
                   std::placeholders::_1, conn_id),
@@ -293,6 +300,14 @@ void ProxyInstance::EntryAddConnection(
   }
 }
 
+void ProxyInstance::AddConnectionTimeout(
+    const muduo::net::TcpConnectionPtr &client_conn) {
+  LOG_ERROR << "proxy client accept connection timeout";
+  // 强制关闭客户端连接
+  uint64_t conn_id = boost::any_cast<uint64_t>(client_conn->getContext());
+  RemoveConnecion(conn_id);
+}
+
 void ProxyInstance::EntryData(const muduo::net::TcpConnectionPtr &conn,
                               ProxyMessagePtr response,
                               const muduo::net::TcpConnectionPtr &client_conn) {
@@ -333,7 +348,7 @@ void ProxyInstance::HandleDataRequest(const muduo::net::TcpConnectionPtr,
   response_head.request_id = message->request_id;
   response_head.body = &response_body;
   // response_body->
-  dispatcher_.SendResponse(proxy_conn_, &response_head);
+  dispatcher_->SendResponse(proxy_conn_, &response_head);
   response_head.body = nullptr;
   return;
 }
@@ -357,7 +372,7 @@ void ProxyInstance::HandleCloseConnRequest(const muduo::net::TcpConnectionPtr,
   } else {
     response_body->mutable_rc()->set_retcode(-1);
   }
-  dispatcher_.SendPbResponse(proxy_conn_, request_head, close_response);
+  dispatcher_->SendPbResponse(proxy_conn_, request_head, close_response);
 }
 
 void ProxyInstance::RemoveConnecion(uint64_t conn_id) {
@@ -382,7 +397,7 @@ void ProxyInstance::HandlePauseSendRequest(const muduo::net::TcpConnectionPtr,
       pause_send_response->mutable_body()->mutable_pause_send_response();
   StopClientRead(conn_key, true);
   response_body->mutable_rc()->set_retcode(0);
-  dispatcher_.SendPbResponse(proxy_conn_, request_head, pause_send_response);
+  dispatcher_->SendPbResponse(proxy_conn_, request_head, pause_send_response);
 }
 
 void ProxyInstance::HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
@@ -400,7 +415,7 @@ void ProxyInstance::HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
       resume_send_response->mutable_body()->mutable_resume_send_response();
   ResumeClientRead(conn_key, true);
   response_body->mutable_rc()->set_retcode(0);
-  dispatcher_.SendPbResponse(proxy_conn_, request_head, resume_send_response);
+  dispatcher_->SendPbResponse(proxy_conn_, request_head, resume_send_response);
 }
 
 void ProxyInstance::StopClientRead(uint64_t conn_id, bool server_block) {
@@ -468,7 +483,7 @@ void ProxyInstance::OnHighWaterMark(bool is_proxy_conn,
     proto::PauseSendRequest *pause_send_request =
         message->mutable_body()->mutable_pause_send_request();
     pause_send_request->set_conn_key(conn_id);
-    dispatcher_.SendPbRequest(
+    dispatcher_->SendPbRequest(
         proxy_conn_, message,
         std::bind(&ProxyInstance::EntryPauseSend, this_ptr(),
                   std::placeholders::_1, conn_id),
@@ -493,7 +508,7 @@ void ProxyInstance::OnWriteComplete(bool is_proxy_conn,
     proto::ResumeSendRequest *resume_send_request =
         message->mutable_body()->mutable_resume_send_request();
     resume_send_request->set_conn_key(conn_id);
-    dispatcher_.SendPbRequest(
+    dispatcher_->SendPbRequest(
         proxy_conn_, message,
         std::bind(&ProxyInstance::EntryResumeSend, this_ptr(),
                   std::placeholders::_1, conn_id),
@@ -521,4 +536,23 @@ void ProxyInstance::CheckStop() {
       stop_cb_();
     }
   }
+}
+
+void ProxyInstance::SendHeartBeat() {
+  MessagePtr message = std::make_shared<proto::Message>();
+  MakeMessage(message.get(), proto::PING, GetSourceEntity());
+  proto::Ping *ping_request = message->mutable_body()->mutable_ping();
+  ping_request->set_time(time(nullptr));
+  LOG_DEBUG << "ping to client, time:" << ping_request->time();
+  dispatcher_->SendPbRequest(proxy_conn_, message,
+                             std::bind(&ProxyInstance::EntryHeartBeat,
+                                       this_ptr(), std::placeholders::_1),
+                             nullptr);
+}
+
+void ProxyInstance::EntryHeartBeat(MessagePtr message) {
+  assert(message->head().message_type() == proto::PONG);
+  assert(message->body().has_pong());
+  const proto::Pong &response = message->body().pong();
+  LOG_DEBUG << "recv pong from client, time:" << response.time();
 }
