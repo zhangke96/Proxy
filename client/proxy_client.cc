@@ -11,7 +11,6 @@
 #include "common/message_util.h"
 
 int ProxyClient::Start() {
-  muduo::Logger::setLogLevel(muduo::Logger::DEBUG);
   dispatcher_.reset(new MessageDispatch(loop_));
   dispatcher_->Init();
   StartProxyService();
