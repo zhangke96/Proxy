@@ -22,10 +22,12 @@ class TcpClient {
   void SetMessageCallback(muduo::net::MessageCallback cb) {
     msg_callback_ = cb;
   }
-  void SetCloseCallback(muduo::net::CloseCallback cb) { close_callback_ = cb; }
+  // void SetCloseCallback(muduo::net::CloseCallback cb) { close_callback_ = cb;
+  // }
   void OnNewConnection(int fd);
   void DestroyConn();
   muduo::net::TcpConnectionPtr Connection();
+  void OnConnClose(const muduo::net::TcpConnectionPtr &);
 
  private:
   muduo::net::EventLoop *loop_;

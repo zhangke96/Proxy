@@ -38,7 +38,8 @@ void TcpClient::OnNewConnection(int sock_fd) {
       loop_, "", sock_fd, local_addr, server_addr_));
   conn->setConnectionCallback(connection_callback_);
   conn->setMessageCallback(msg_callback_);
-  conn->setCloseCallback(close_callback_);
+  conn->setCloseCallback(
+      std::bind(&TcpClient::OnConnClose, this, std::placeholders::_1));
   {
     muduo::MutexLockGuard lock(mutex_);
     connection_ = conn;
@@ -60,3 +61,5 @@ muduo::net::TcpConnectionPtr TcpClient::Connection() {
   muduo::MutexLockGuard lock(mutex_);
   return connection_;
 }
+
+void TcpClient::OnConnClose(const muduo::net::TcpConnectionPtr&) {}
