@@ -2,7 +2,6 @@
 #ifndef SERVER_PROXY_INSTANCE_H_
 #define SERVER_PROXY_INSTANCE_H_
 
-#include <muduo/net/Acceptor.h>
 #include <muduo/net/Callbacks.h>
 #include <muduo/net/EventLoop.h>
 #include <muduo/net/TcpConnection.h>
@@ -12,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "Acceptor.h"
 #include "TcpServer.h"
 #include "common/message_dispatch.h"
 
@@ -69,7 +69,7 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   void HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
                                ProxyMessagePtr request_head,
                                MessagePtr message);
-  void StartListen();
+  std::pair<bool, std::string> StartListen();
   void RemoveConnecion(uint64_t conn_id);
   void StopClientRead(uint64_t conn_id = 0, bool server_block = false);
   void ResumeClientRead(uint64_t conn_id = 0, bool sever_block = false);
@@ -93,7 +93,7 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   std::map<uint64_t, Connection> conn_map_;
   // std::map<uint64_t, muduo::net::TcpConnectionPtr> conn_map_;
   // std::map<uint64_t, std::vector<std::string>> pending_message_;
-  std::unique_ptr<muduo::net::Acceptor> acceptor_;
+  std::unique_ptr<Acceptor> acceptor_;
   std::shared_ptr<muduo::net::EventLoopThreadPool> thread_pool_;
   bool proxy_client_connect_;
   muduo::net::TimerId heartbeat_timer_;

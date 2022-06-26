@@ -10,6 +10,7 @@
 #include <muduo/net/TcpClient.h>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -41,6 +42,7 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
               const muduo::net::InetAddress &local_address,
               uint16_t listen_port)
       : loop_(loop),
+        dispatcher_(new MessageDispatch(loop_)),
         source_entity_(0),
         server_address_(server_address),
         local_address_(local_address),
@@ -107,6 +109,7 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
   uint64_t session_key_;
   std::unordered_map<uint64_t, ProxyConnection> clients_;
   bool first_connect_;
+  std::once_flag start_flag_;
 };
 
 #endif  // CLIENT_PROXY_CLIENT_H_

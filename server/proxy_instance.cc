@@ -21,10 +21,7 @@ ProxyInstance::ProxyInstance(muduo::net::EventLoop *loop,
       source_entity_(0),
       proxy_client_connect_(true) {}
 
-ProxyInstance::~ProxyInstance() {
-  loop_->cancel(check_listen_timer_);
-  loop_->cancel(heartbeat_timer_);
-}
+ProxyInstance::~ProxyInstance() {}
 
 void ProxyInstance::Init() {
   dispatcher_->Init();
@@ -57,7 +54,10 @@ void ProxyInstance::Init() {
       10 * MB_SIZE);
   // 启动定时器,10s之内没有链接就断开
   check_listen_timer_ =
-      loop_->runAfter(10.0, std::bind(&ProxyInstance::CheckListen, this_ptr()));
+      loop_->runAfter(10.0, std::bind(&ProxyInstance::CheckListen, this));
+  // 启动心跳定时器
+  heartbeat_timer_ =
+      loop_->runEvery(10.0, std::bind(&ProxyInstance::SendHeartBeat, this));
 }
 
 void ProxyInstance::Stop(StopCb cb) {
@@ -65,8 +65,11 @@ void ProxyInstance::Stop(StopCb cb) {
   // 等到所有连接都close
   stop_cb_ = cb;
   proxy_client_connect_ = false;
+  // 停止心跳定时器
+  loop_->cancel(check_listen_timer_);
+  loop_->cancel(heartbeat_timer_);
   acceptor_.reset();
-  dispatcher_.reset();
+  dispatcher_.reset();  // TODO(ke.zhang) 这里是否有内存问题?
   for (auto &conn : conn_map_) {
     conn.second.conn->forceClose();
   }
@@ -94,29 +97,37 @@ void ProxyInstance::HandleListenRequest(const muduo::net::TcpConnectionPtr,
   }
   uint16_t listen_port =
       static_cast<uint16_t>(message->body().listen_request().listen_port());
-  listen_addr_ = muduo::net::InetAddress("0.0.0.0", listen_port);
-  StartListen();
-  response_body->mutable_rc()->set_retcode(0);
-  response_body->mutable_rc()->set_error_message("success");
+  listen_addr_ =
+      muduo::net::InetAddress(proxy_conn_->localAddress().toIp(), listen_port);
+  // listen_addr_ = muduo::net::InetAddress("0.0.0.0", listen_port);
+  auto listen_result = StartListen();
+  if (listen_result.first) {
+    response_body->mutable_rc()->set_retcode(0);
+    response_body->mutable_rc()->set_error_message("success");
+  } else {
+    LOG_ERROR << "listen failed, port:" << listen_port
+              << " error:" << listen_result.second;
+    acceptor_.reset();
+    response_body->mutable_rc()->set_retcode(-1);
+    response_body->mutable_rc()->set_error_message(listen_result.second);
+  }
   dispatcher_->SendPbResponse(proxy_conn_, request_head, listen_response_msg_);
-  heartbeat_timer_ =
-      loop_->runEvery(10.0, std::bind(&ProxyInstance::SendHeartBeat, this));
   return;
 }
 
-void ProxyInstance::StartListen() {
+std::pair<bool, std::string> ProxyInstance::StartListen() {
   loop_->assertInLoopThread();
   LOG_INFO << "proxy listen client_addr:"
            << proxy_conn_->peerAddress().toIpPort()
            << " listen_addr:" << listen_addr_.toIpPort();
-  acceptor_.reset(new muduo::net::Acceptor(loop_, listen_addr_, true));
+  acceptor_.reset(new Acceptor(loop_, listen_addr_, false));
   acceptor_->setNewConnectionCallback(std::bind(&ProxyInstance::OnNewConnection,
                                                 this, std::placeholders::_1,
                                                 std::placeholders::_2));
   thread_pool_.reset(
       new muduo::net::EventLoopThreadPool(loop_, "proxy_server"));
   thread_pool_->start(nullptr);
-  acceptor_->listen();
+  return acceptor_->listen();
 }
 
 void ProxyInstance::OnNewConnection(int sockfd,
@@ -150,7 +161,6 @@ void ProxyInstance::OnClientConnection(
   loop_->runInLoop([=] {
     if (conn->getContext().empty()) {
       // 连接建立调用
-      assert(conn->getContext().empty());
       uint64_t conn_id = GetConnId();
       conn->setContext(conn_id);
       conn_map_.insert(std::make_pair(conn_id, Connection(conn)));
@@ -377,8 +387,10 @@ void ProxyInstance::HandleCloseConnRequest(const muduo::net::TcpConnectionPtr,
 
 void ProxyInstance::RemoveConnecion(uint64_t conn_id) {
   auto index = conn_map_.find(conn_id);
-  assert(index != conn_map_.end());
-  index->second.conn->getLoop()->runInLoop(std::bind(
+  if (index == conn_map_.end()) {
+    return;
+  }
+  index->second.conn->getLoop()->queueInLoop(std::bind(
       &muduo::net::TcpConnection::connectDestroyed, index->second.conn));
   conn_map_.erase(index);
 }
@@ -426,9 +438,7 @@ void ProxyInstance::StopClientRead(uint64_t conn_id, bool server_block) {
                << " read failed, not found connection";
     } else {
       (index->second).conn->stopRead();
-      if (server_block) {
-        (index->second).server_block = true;
-      }
+      (index->second).server_block = server_block;
       LOG_INFO << "stop conn_id:" << conn_id << " read succ";
     }
     return;

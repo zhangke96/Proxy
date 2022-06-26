@@ -20,13 +20,15 @@ void ProxyServer::Start() {
 
 void ProxyServer::OnConnection(const muduo::net::TcpConnectionPtr &conn) {
   if (proxy_instances_.find(conn.get()) == proxy_instances_.end()) {
-    LOG_INFO << "new connection from:" << conn->peerAddress().toIpPort();
+    LOG_INFO << "new proxy client connection from:"
+             << conn->peerAddress().toIpPort();
     std::shared_ptr<ProxyInstance> proxy_instance =
         std::make_shared<ProxyInstance>(conn->getLoop(), conn);
     proxy_instances_[conn.get()] = proxy_instance;
     proxy_instance->Init();
   } else {
-    LOG_INFO << "connection close:" << conn->peerAddress().toIpPort();
+    LOG_INFO << "proxy client connection close:"
+             << conn->peerAddress().toIpPort();
     proxy_instances_[conn.get()]->Stop(
         std::bind(&ProxyServer::OnProxyInstanceStop, this, conn.get()));
   }

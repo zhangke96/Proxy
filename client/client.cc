@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     switch (ch) {
       case 's':
         server_address_p = optarg;
-        std::cout << "server_address:" << *server_address_p << std::endl;
+        std::cout << "server_address:" << server_address_p << std::endl;
         break;
       case 'p':
         port = atoi(optarg);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
         break;
       case 'S':
         proxy_server_address_p = optarg;
-        std::cout << "proxy_server_address:" << *proxy_server_address_p
+        std::cout << "proxy_server_address:" << proxy_server_address_p
                   << std::endl;
         break;
       case 'P':

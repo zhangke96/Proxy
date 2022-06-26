@@ -11,9 +11,7 @@
 #include "common/message_util.h"
 
 int ProxyClient::Start() {
-  dispatcher_.reset(new MessageDispatch(loop_));
-  dispatcher_->Init();
-  StartProxyService();
+  std::call_once(start_flag_, &ProxyClient::StartProxyService, this);
   {
     muduo::MutexLockGuard lock(mutex_);
     while (!start_finish_) {
@@ -26,10 +24,13 @@ int ProxyClient::Start() {
 void ProxyClient::StartProxyService() {
   // 建立连接
   loop_->runInLoop([=] {
+    dispatcher_->Init();
     proxy_client_.reset(
         new muduo::net::TcpClient(loop_, server_address_, "proxy_connection"));
+    // 连接到proxy server成功
     proxy_client_->setConnectionCallback(std::bind(
         &ProxyClient::OnProxyConnection, this_ptr(), std::placeholders::_1));
+    // proxy server conn 收到消息
     proxy_client_->setMessageCallback(
         std::bind(&ProxyClient::OnMessage, this_ptr(), std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3));
@@ -94,7 +95,7 @@ void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &conn) {
     uint32_t ip =
         ntohl(((sockaddr_in *)local_address_.getSockAddr())->sin_addr.s_addr);
     listen_request->set_self_ipv4(ip);
-    listen_request->set_self_port(local_address_.toPort());
+    listen_request->set_self_port(local_address_.port());
     listen_request->set_listen_port(listen_port_);
     dispatcher_->SendPbRequest(proxy_client_->connection(), message,
                                std::bind(&ProxyClient::HandleListenResponse,
@@ -290,7 +291,8 @@ void ProxyClient::OnClientClose(const muduo::net::TcpConnectionPtr &,
                                 uint64_t conn_key) {
   LOG_INFO << "server shutdown write, conn_key:" << conn_key;
   assert(clients_.find(conn_key) != clients_.end());
-  const ProxyConnection &proxy_connection = clients_[conn_key];
+  ProxyConnection &proxy_connection = clients_[conn_key];
+  proxy_connection.server_open = false;
   LOG_DEBUG << "address: " << &proxy_connection << " conn_key:" << conn_key;
   if (proxy_connection.client_open == true) {
     MessagePtr request_message = std::make_shared<proto::Message>();
@@ -331,7 +333,7 @@ void ProxyClient::ClientClose(uint64_t conn_key) {
     return;
   }
   client_connection.client_open = false;
-  if (client_connection.server_open == false) {
+  if (client_connection.state != ProxyConnState::CONNECTED) {
     LOG_DEBUG << "connection to server not accepted, conn_id:" << conn_key;
     // 到server连接还没建立成功
     client_connection.client_conn->Stop();
@@ -339,16 +341,19 @@ void ProxyClient::ClientClose(uint64_t conn_key) {
     // 这里应该获取TcpClient对应的loop
     loop_->runAfter(
         1.0, std::bind(&ProxyClient::RemoveConnection, this, conn_key, false));
-  } else {
+  } else if (client_connection.server_open == true) {
     client_connection.client_conn->DestroyConn();
   }
 }
 
 void ProxyClient::RemoveConnection(uint64_t conn_key, bool destroy) {
-  loop_->runInLoop([=] {
+  loop_->queueInLoop([=] {
     LOG_INFO << "remove connection, conn_key:" << conn_key
              << ", destroy(bool): " << destroy;
-    assert(clients_.count(conn_key));
+    if (!clients_.count(conn_key)) {
+      LOG_WARN << "conn_key:" << conn_key << " already removed";
+      return;
+    }
     // 如果到server连接还没建立成功，不能调用DestroyConn
     if (destroy) {
       ProxyConnection &proxy_connection = clients_[conn_key];
@@ -425,9 +430,10 @@ void ProxyClient::ResumeClientRead(uint64_t conn_id, bool client_block) {
       LOG_WARN << "resume conn_id:" << conn_id
                << " read failed, not found connection";
     } else {
-      if ((index->second).client_block && !client_block) {
+      ProxyConnection &conn = index->second;
+      if (conn.client_block && !client_block) {
         LOG_INFO << "not resume conn_id:" << conn_id << " read, client block";
-      } else {
+      } else if (conn.client_open && conn.server_open) {
         (index->second).client_conn->Connection()->startRead();
         (index->second).client_block = false;
         LOG_INFO << "resume conn_id:" << conn_id << " read succ";

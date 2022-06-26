@@ -2,6 +2,7 @@ set(proxy_server_srcs
     proxy_instance.cc
     proxy_server.cc
     server.cc
+    Acceptor.cc
 )
 
 add_executable(proxy_server ${proxy_server_srcs})

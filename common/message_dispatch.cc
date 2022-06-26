@@ -39,7 +39,7 @@ void MessageDispatch::CheckTimeout() {
       } else {
         --(request_context.retry_count);
         LOG_INFO << "retry request_id: " << index->first << " send to:"
-                  << (index->second).conn->peerAddress().toIpPort();
+                 << (index->second).conn->peerAddress().toIpPort();
         (index->second)
             .conn->send(request_context.request.c_str(),
                         request_context.request.length());
