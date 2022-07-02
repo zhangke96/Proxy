@@ -1,6 +1,7 @@
 // Copyright [2020] zhangke
 
 #include <muduo/base/Logging.h>
+#include <muduo/base/LogFile.h>
 #include <muduo/net/InetAddress.h>
 #include <unistd.h>
 
@@ -18,6 +19,17 @@ void PrintUsage(const char *command) {
             << " -L log_level[trace/debug/info/warn]"
             << " -h help" << std::endl;
 }
+
+std::unique_ptr<muduo::LogFile> g_logFile;
+
+void outputFunc(const char* msg, int len) {
+  g_logFile->append(msg, len);
+}
+
+void flushFunc() {
+  g_logFile->flush();
+}
+
 int main(int argc, char *argv[]) {
   // server address, server port, transfer port, proxy server address, proxy
   // server port
@@ -97,7 +109,12 @@ int main(int argc, char *argv[]) {
     PrintUsage(argv[0]);
     exit(1);
   }
+  char name[256] = {0};
+  strncpy(name, argv[0], sizeof(name) - 1);
+  g_logFile.reset(new muduo::LogFile(::basename(name), 10*1024*1024, true, 1, 1));
   muduo::Logger::setLogLevel(log_level);
+  muduo::Logger::setOutput(outputFunc);
+  muduo::Logger::setFlush(flushFunc);
   muduo::net::InetAddress server_address(server_port);
   bool ret =
       muduo::net::InetAddress::resolve(server_address_p, &server_address);

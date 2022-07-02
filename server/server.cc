@@ -1,5 +1,6 @@
 // Copyright [2020] zhangke
 #include <muduo/base/Logging.h>
+#include <muduo/base/LogFile.h>
 #include <muduo/net/EventLoop.h>
 #include <muduo/net/InetAddress.h>
 
@@ -12,6 +13,17 @@ void PrintUsage(const char *command) {
             << " -l log_level[trace/debug/info/warn]"
             << " -h help" << std::endl;
 }
+
+std::unique_ptr<muduo::LogFile> g_logFile;
+
+void outputFunc(const char* msg, int len) {
+  g_logFile->append(msg, len);
+}
+
+void flushFunc() {
+  g_logFile->flush();
+}
+
 
 int main(int argc, char *argv[]) {
   const char *listen_address_p = nullptr, *level_str = nullptr;
@@ -64,7 +76,12 @@ int main(int argc, char *argv[]) {
   }
   muduo::net::EventLoop loop;
   muduo::net::InetAddress address(listen_address_p, listen_port);
+   char name[256] = {0};
+  strncpy(name, argv[0], sizeof(name) - 1);
+  g_logFile.reset(new muduo::LogFile(::basename(name), 10*1024*1024, true, 1, 1));
   muduo::Logger::setLogLevel(log_level);
+  muduo::Logger::setOutput(outputFunc);
+  muduo::Logger::setFlush(flushFunc);
   ProxyServer proxy_server(&loop, address);
   proxy_server.Start();
   loop.loop();
