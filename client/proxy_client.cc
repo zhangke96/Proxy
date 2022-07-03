@@ -54,6 +54,9 @@ void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &conn) {
         std::bind(&ProxyClient::OnHighWaterMark, this, true,
                   std::placeholders::_1, std::placeholders::_2),
         10 * MB_SIZE);
+    // 开始心跳
+    heartbeat_timer_ =
+        loop_->runEvery(10.0, std::bind(&ProxyClient::SendHeartBeat, this));
     if (first_connect_) {
       first_connect_ = false;
       // 注册pb handle
@@ -104,6 +107,7 @@ void ProxyClient::OnProxyConnection(const muduo::net::TcpConnectionPtr &conn) {
   } else {
     LOG_WARN << "proxy connection disconnected, exist conn count:"
              << clients_.size();
+    loop_->cancel(heartbeat_timer_);
     std::vector<uint64_t> exist_connections;
     exist_connections.reserve(clients_.size());
     for (const auto &connection : clients_) {
@@ -407,12 +411,16 @@ void ProxyClient::StopClientRead(uint64_t conn_id, bool client_block) {
       LOG_WARN << "stop conn_id:" << conn_id
                << " read failed, not found connection";
     } else {
-      (index->second).client_conn->Connection()->stopRead();
-      if (client_block) {
-        // 标识client链接阻塞
-        (index->second).client_block = true;
+      if ((index->second).server_open) {
+        (index->second).client_conn->Connection()->stopRead();
+        if (client_block) {
+          // 标识client链接阻塞
+          (index->second).client_block = true;
+        }
+        LOG_INFO << "stop conn_id:" << conn_id << " read succ";
+      } else {
+        LOG_WARN << "already close conn_id:" << conn_id;
       }
-      LOG_INFO << "stop conn_id:" << conn_id << " read succ";
     }
     return;
   } else {
@@ -512,4 +520,23 @@ void ProxyClient::HandleHeartbeat(const muduo::net::TcpConnectionPtr,
   response_body->set_time(time(nullptr));
   dispatcher_->SendPbResponse(proxy_client_->connection(), request_head,
                               pong_response);
+}
+
+void ProxyClient::SendHeartBeat() {
+  MessagePtr message = std::make_shared<proto::Message>();
+  MakeMessage(message.get(), proto::PING, GetSourceEntity());
+  proto::Ping *ping_request = message->mutable_body()->mutable_ping();
+  ping_request->set_time(time(nullptr));
+  LOG_DEBUG << "ping to server, time:" << ping_request->time();
+  dispatcher_->SendPbRequest(proxy_client_->connection(), message,
+                             std::bind(&ProxyClient::EntryHeartBeat, this_ptr(),
+                                       std::placeholders::_1),
+                             nullptr);
+}
+
+void ProxyClient::EntryHeartBeat(MessagePtr message) {
+  assert(message->head().message_type() == proto::PONG);
+  assert(message->body().has_pong());
+  const proto::Pong &response = message->body().pong();
+  LOG_DEBUG << "recv pong from server, time:" << response.time();
 }

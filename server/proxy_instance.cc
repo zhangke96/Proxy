@@ -45,6 +45,10 @@ void ProxyInstance::Init() {
       std::bind(&ProxyInstance::HandleResumeSendRequest, this,
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
+  dispatcher_->RegisterPbHandle(
+      proto::PING,
+      std::bind(&ProxyInstance::HandleHeartbeat, this, std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3));
   dispatcher_->RegisterMsgHandle(
       DATA_REQUEST, std::bind(&ProxyInstance::HandleDataRequest, this,
                               std::placeholders::_1, std::placeholders::_2));
@@ -565,4 +569,15 @@ void ProxyInstance::EntryHeartBeat(MessagePtr message) {
   assert(message->body().has_pong());
   const proto::Pong &response = message->body().pong();
   LOG_DEBUG << "recv pong from client, time:" << response.time();
+}
+
+void ProxyInstance::HandleHeartbeat(const muduo::net::TcpConnectionPtr,
+                                    ProxyMessagePtr request_head,
+                                    MessagePtr message) {
+  MessagePtr pong_response = std::make_shared<proto::Message>();
+  MakeResponse(message.get(), proto::PONG, pong_response.get());
+  proto::Pong *response_body = pong_response->mutable_body()->mutable_pong();
+  response_body->mutable_rc()->set_retcode(0);
+  response_body->set_time(time(nullptr));
+  dispatcher_->SendPbResponse(proxy_conn_, request_head, pong_response);
 }

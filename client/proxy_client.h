@@ -82,6 +82,7 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
                                MessagePtr message);
   void HandleHeartbeat(const muduo::net::TcpConnectionPtr,
                        ProxyMessagePtr request_head, MessagePtr message);
+  void EntryHeartBeat(MessagePtr message);
 
  private:
   std::shared_ptr<ProxyClient> this_ptr() { return shared_from_this(); }
@@ -95,6 +96,7 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
                        size_t);
   void OnWriteComplete(bool is_proxy_conn,
                        const muduo::net::TcpConnectionPtr &);
+  void SendHeartBeat();
   muduo::net::EventLoop *loop_;
   std::unique_ptr<MessageDispatch> dispatcher_;
   uint32_t source_entity_;
@@ -110,6 +112,7 @@ class ProxyClient : public std::enable_shared_from_this<ProxyClient> {
   std::unordered_map<uint64_t, ProxyConnection> clients_;
   bool first_connect_;
   std::once_flag start_flag_;
+  muduo::net::TimerId heartbeat_timer_;
 };
 
 #endif  // CLIENT_PROXY_CLIENT_H_

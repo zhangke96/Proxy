@@ -69,6 +69,8 @@ class ProxyInstance : public std::enable_shared_from_this<ProxyInstance> {
   void HandleResumeSendRequest(const muduo::net::TcpConnectionPtr,
                                ProxyMessagePtr request_head,
                                MessagePtr message);
+  void HandleHeartbeat(const muduo::net::TcpConnectionPtr,
+                       ProxyMessagePtr request_head, MessagePtr message);
   std::pair<bool, std::string> StartListen();
   void RemoveConnecion(uint64_t conn_id);
   void StopClientRead(uint64_t conn_id = 0, bool server_block = false);
